@@ -1,11 +1,3 @@
-#!/usr/bin/env python3
-"""
-Python Code Hub Banner
-----------------------
-This script displays a styled banner with Python features
-in a box form. Perfect for showcasing on GitHub.
-"""
-
 import shutil
 
 # Python Features List
