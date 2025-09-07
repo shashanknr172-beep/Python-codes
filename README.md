@@ -1,5 +1,3 @@
-import shutil
-
 # Python Features List
 PYTHON_FEATURES = [
     "Easy to Learn & Readable",
