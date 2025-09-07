@@ -1,9 +1,3 @@
-import shutil
-from colorama import init, Fore, Style
-
-# Initialize Colorama
-init(autoreset=True)
-
 # Python Features List
 PYTHON_FEATURES = [
     "Easy to Learn & Readable",
