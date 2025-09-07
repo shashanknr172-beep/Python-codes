@@ -1,3 +1,9 @@
+import shutil
+from colorama import init, Fore, Style
+
+# Initialize Colorama
+init(autoreset=True)
+
 # Python Features List
 PYTHON_FEATURES = [
     "Easy to Learn & Readable",
@@ -12,15 +18,12 @@ PYTHON_FEATURES = [
     "Strong Integration with C/C++/Java"
 ]
 
-def draw_box(title: str, items: list) -> None:
+def draw_colored_box(title: str, items: list) -> None:
     """
-    Draws a text box with a title and a list of items.
+    Draws a colorful text box with a title and list of items.
     """
-    # Get terminal width
     term_width = shutil.get_terminal_size().columns
     box_width = max(len(title), max(len(item) for item in items)) + 6
     box_width = min(box_width, term_width - 4)
 
-    # Draw top border
-    print("┌" + "─" * box_width + "┐")
-    
+    border
