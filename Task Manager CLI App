@@ -1,0 +1,169 @@
+#It simulates how companies structure small tools for employees
+#!/usr/bin/env python3
+"""
+#Task Manager CLI Application
+----------------------------
+#A simple task manager that allows users to:
+#Add tasks
+#List tasks
+#Mark tasks as completed
+#Delete tasks
+#Save tasks to a JSON file (persistent storage)
+#This script demonstrates production-style code with logging,
+exception handling, and modular design.
+"""
+
+import json
+import os
+import sys
+import logging
+from typing import List, Dict, Optional
+
+# ---------------------- Logging Setup ---------------------- #
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    handlers=[
+        logging.FileHandler("task_manager.log"),
+        logging.StreamHandler(sys.stdout),
+    ],
+)
+
+# ---------------------- Data Model ---------------------- #
+class Task:
+    """Represents a single task."""
+
+    def __init__(self, title: str, description: str = "") -> None:
+        self.title = title
+        self.description = description
+        self.completed = False
+
+    def to_dict(self) -> Dict:
+        return {
+            "title": self.title,
+            "description": self.description,
+            "completed": self.completed,
+        }
+
+    @staticmethod
+    def from_dict(data: Dict) -> "Task":
+        task = Task(data["title"], data.get("description", ""))
+        task.completed = data.get("completed", False)
+        return task
+
+# ---------------------- Task Manager ---------------------- #
+class TaskManager:
+    """Manages a collection of tasks with persistence."""
+
+    def __init__(self, storage_file: str = "tasks.json") -> None:
+        self.storage_file = storage_file
+        self.tasks: List[Task] = []
+        self._load_tasks()
+
+    def _load_tasks(self) -> None:
+        """Load tasks from JSON file."""
+        if os.path.exists(self.storage_file):
+            try:
+                with open(self.storage_file, "r") as f:
+                    data = json.load(f)
+                    self.tasks = [Task.from_dict(item) for item in data]
+                logging.info("Tasks loaded successfully.")
+            except Exception as e:
+                logging.error(f"Error loading tasks: {e}")
+                self.tasks = []
+
+    def _save_tasks(self) -> None:
+        """Save tasks to JSON file."""
+        try:
+            with open(self.storage_file, "w") as f:
+                json.dump([t.to_dict() for t in self.tasks], f, indent=4)
+            logging.info("Tasks saved successfully.")
+        except Exception as e:
+            logging.error(f"Error saving tasks: {e}")
+
+    def add_task(self, title: str, description: str = "") -> None:
+        self.tasks.append(Task(title, description))
+        self._save_tasks()
+        logging.info(f"Task '{title}' added.")
+
+    def list_tasks(self) -> List[Task]:
+        return self.tasks
+
+    def complete_task(self, index: int) -> bool:
+        if 0 <= index < len(self.tasks):
+            self.tasks[index].completed = True
+            self._save_tasks()
+            logging.info(f"Task '{self.tasks[index].title}' marked as completed.")
+            return True
+        return False
+
+    def delete_task(self, index: int) -> bool:
+        if 0 <= index < len(self.tasks):
+            removed = self.tasks.pop(index)
+            self._save_tasks()
+            logging.info(f"Task '{removed.title}' deleted.")
+            return True
+        return False
+
+# ---------------------- CLI Interface ---------------------- #
+def print_menu() -> None:
+    print("\n=== Task Manager ===")
+    print("1. Add Task")
+    print("2. List Tasks")
+    print("3. Complete Task")
+    print("4. Delete Task")
+    print("5. Exit")
+
+def main() -> None:
+    manager = TaskManager()
+
+    while True:
+        print_menu()
+        try:
+            choice = input("Enter your choice (1-5): ").strip()
+            if choice == "1":
+                title = input("Task Title: ").strip()
+                description = input("Task Description: ").strip()
+                manager.add_task(title, description)
+                print("✅ Task added successfully.")
+            elif choice == "2":
+                tasks = manager.list_tasks()
+                if not tasks:
+                    print("No tasks found.")
+                else:
+                    for i, task in enumerate(tasks, 1):
+                        status = "✔️ Done" if task.completed else "❌ Pending"
+                        print(f"{i}. {task.title} - {status}\n   {task.description}")
+            elif choice == "3":
+                idx = int(input("Enter task number to complete: ")) - 1
+                if manager.complete_task(idx):
+                    print("✅ Task marked as completed.")
+                else:
+                    print("⚠️ Invalid task number.")
+            elif choice == "4":
+                idx = int(input("Enter task number to delete: ")) - 1
+                if manager.delete_task(idx):
+                    print("🗑️ Task deleted successfully.")
+                else:
+                    print("⚠️ Invalid task number.")
+            elif choice == "5":
+                print("👋 Exiting Task Manager. Goodbye!")
+                break
+            else:
+                print("⚠️ Invalid choice. Try again.")
+        except KeyboardInterrupt:
+            print("\n👋 Exiting Task Manager. Goodbye!")
+            break
+        except Exception as e:
+            logging.error(f"Unexpected error: {e}")
+            print("⚠️ Something went wrong. Check logs for details.")
+
+if __name__ == "__main__":
+    main()
+
+#Features:
+#JSON storage (persistent tasks)
+#Logging (writes to both console & task_manager.log)
+#Error handling & user-friendly messages
+#CLI interface (menu-driven, easy to use)
+#Structured like MNC-quality Python code (OOP, type hints, docstrings)
