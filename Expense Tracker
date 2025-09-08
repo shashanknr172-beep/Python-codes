@@ -1,0 +1,138 @@
+#Expense Tracker CLI
+#A simple expense tracking system with:
+#Add expense
+#List expenses
+#Category-wise total
+#Save/Load from JSON
+#This simulates a small real-world tool MNCs might provide to employees.
+
+
+import json
+import os
+import sys
+from typing import List, Dict
+from datetime import datetime
+import logging
+
+# ---------------- Logging ---------------- #
+logging.basicConfig(
+    filename="expense_tracker.log",
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s"
+)
+
+# ---------------- Expense Model ---------------- #
+class Expense:
+    def __init__(self, amount: float, category: str, note: str = "") -> None:
+        self.amount = amount
+        self.category = category
+        self.note = note
+        self.date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    def to_dict(self) -> Dict:
+        return {
+            "amount": self.amount,
+            "category": self.category,
+            "note": self.note,
+            "date": self.date
+        }
+
+    @staticmethod
+    def from_dict(data: Dict) -> "Expense":
+        exp = Expense(data["amount"], data["category"], data.get("note", ""))
+        exp.date = data.get("date", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+        return exp
+
+# ---------------- Expense Tracker ---------------- #
+class ExpenseTracker:
+    def __init__(self, storage_file: str = "expenses.json") -> None:
+        self.storage_file = storage_file
+        self.expenses: List[Expense] = []
+        self._load()
+
+    def _load(self) -> None:
+        if os.path.exists(self.storage_file):
+            try:
+                with open(self.storage_file, "r") as f:
+                    data = json.load(f)
+                    self.expenses = [Expense.from_dict(e) for e in data]
+                logging.info("Expenses loaded successfully.")
+            except Exception as e:
+                logging.error(f"Error loading expenses: {e}")
+                self.expenses = []
+
+    def _save(self) -> None:
+        try:
+            with open(self.storage_file, "w") as f:
+                json.dump([e.to_dict() for e in self.expenses], f, indent=4)
+            logging.info("Expenses saved successfully.")
+        except Exception as e:
+            logging.error(f"Error saving expenses: {e}")
+
+    def add_expense(self, amount: float, category: str, note: str = "") -> None:
+        exp = Expense(amount, category, note)
+        self.expenses.append(exp)
+        self._save()
+        logging.info(f"Added expense: {amount} in {category}")
+
+    def list_expenses(self) -> List[Expense]:
+        return self.expenses
+
+    def summary_by_category(self) -> Dict[str, float]:
+        summary = {}
+        for e in self.expenses:
+            summary[e.category] = summary.get(e.category, 0) + e.amount
+        return summary
+
+# ---------------- CLI ---------------- #
+def print_menu() -> None:
+    print("\n=== Expense Tracker ===")
+    print("1. Add Expense")
+    print("2. List Expenses")
+    print("3. Summary by Category")
+    print("4. Exit")
+
+def main():
+    tracker = ExpenseTracker()
+
+    while True:
+        print_menu()
+        choice = input("Enter your choice (1-4): ").strip()
+
+        if choice == "1":
+            try:
+                amount = float(input("Enter amount: "))
+                category = input("Enter category (Food, Travel, Bills, etc.): ").strip()
+                note = input("Enter note (optional): ").strip()
+                tracker.add_expense(amount, category, note)
+                print("✅ Expense added successfully.")
+            except ValueError:
+                print("⚠️ Invalid amount. Try again.")
+
+        elif choice == "2":
+            expenses = tracker.list_expenses()
+            if not expenses:
+                print("No expenses recorded.")
+            else:
+                print("\n--- All Expenses ---")
+                for i, e in enumerate(expenses, 1):
+                    print(f"{i}. {e.date} | ₹{e.amount:.2f} | {e.category} | {e.note}")
+
+        elif choice == "3":
+            summary = tracker.summary_by_category()
+            if not summary:
+                print("No expenses recorded.")
+            else:
+                print("\n--- Category Summary ---")
+                for cat, total in summary.items():
+                    print(f"{cat}: ₹{total:.2f}")
+
+        elif choice == "4":
+            print("👋 Exiting Expense Tracker. Goodbye!")
+            sys.exit(0)
+
+        else:
+            print("⚠️ Invalid choice, try again.")
+
+if __name__ == "__main__":
+    main()
