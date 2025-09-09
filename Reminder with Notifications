@@ -1,4 +1,4 @@
-#Reminder App - CLI
+#Reminder App- CLI
 #A simple reminder app that:
 #Lets user add reminders with a due time
 #Stores them in JSON
