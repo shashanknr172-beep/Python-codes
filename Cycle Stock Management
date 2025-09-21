@@ -1,0 +1,95 @@
+#Features
+#Add new cycle models with stock quantity and price
+#View all stock with live updates
+#Sell cycles (automatically decreases stock)
+#Deletes model if stock goes 0
+#Saves all data into cycle_stock.json so information is not lost after closing
+
+
+
+
+
+
+import json
+import os
+
+# File to save stock data
+FILE = "cycle_stock.json"
+
+# Load stock from file
+def load_stock():
+    if os.path.exists(FILE):
+        with open(FILE, "r") as f:
+            return json.load(f)
+    return {}
+
+# Save stock to file
+def save_stock(stock):
+    with open(FILE, "w") as f:
+        json.dump(stock, f, indent=4)
+
+# Add cycle stock
+def add_cycle(stock):
+    model = input("Enter Cycle Model: ")
+    qty = int(input("Enter Quantity: "))
+    price = float(input("Enter Price per Cycle: "))
+
+    if model in stock:
+        stock[model]["quantity"] += qty
+    else:
+        stock[model] = {"quantity": qty, "price": price}
+    
+    save_stock(stock)
+    print(f" {qty} units of {model} added to stock.")
+
+# View stock
+def view_stock(stock):
+    if not stock:
+        print(" No stock available!")
+    else:
+        print("\n--- CYCLE STOCK ---")
+        for model, details in stock.items():
+            print(f"{model} | Qty: {details['quantity']} | Price: ₹{details['price']}")
+
+# Sell cycle
+def sell_cycle(stock):
+    model = input("Enter Cycle Model to Sell: ")
+    if model in stock:
+        qty = int(input("Enter Quantity to Sell: "))
+        if qty <= stock[model]["quantity"]:
+            stock[model]["quantity"] -= qty
+            total = qty * stock[model]["price"]
+            print(f" Sold {qty} {model}(s) for ₹{total}")
+            if stock[model]["quantity"] == 0:
+                del stock[model]
+            save_stock(stock)
+        else:
+            print(" Not enough stock available!")
+    else:
+        print(" Model not found!")
+
+# Main menu
+def main():
+    stock = load_stock()
+    while True:
+        print("\n===== 🚲 CYCLE STOCK MANAGEMENT =====")
+        print("1. Add Cycle Stock")
+        print("2. View Stock")
+        print("3. Sell Cycle")
+        print("4. Exit")
+        choice = input(" Enter choice: ")
+
+        if choice == "1":
+            add_cycle(stock)
+        elif choice == "2":
+            view_stock(stock)
+        elif choice == "3":
+            sell_cycle(stock)
+        elif choice == "4":
+            print(" Exiting... Data saved!")
+            break
+        else:
+            print(" Invalid choice!")
+
+if __name__ == "__main__":
+    main()
