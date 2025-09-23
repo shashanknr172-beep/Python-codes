@@ -1,0 +1,85 @@
+import json
+import os
+
+FILE = "watermelon_shop.json"
+
+# Load data
+def load_data():
+    if os.path.exists(FILE):
+        with open(FILE, "r") as f:
+            return json.load(f)
+    return {"stock": 0, "price_per_kg": 0, "sales": []}
+
+# Save data
+def save_data(data):
+    with open(FILE, "w") as f:
+        json.dump(data, f, indent=4)
+
+# Add stock
+def add_stock(data):
+    qty = float(input("Enter stock to add (kg): "))
+    price = float(input("Enter price per kg: "))
+    data["stock"] += qty
+    data["price_per_kg"] = price
+    save_data(data)
+    print(f" Added {qty} kg of watermelon at ₹{price}/kg")
+
+# View stock
+def view_stock(data):
+    print("\n---  CURRENT STOCK ---")
+    print(f"Available Stock: {data['stock']} kg")
+    print(f"Price per kg: ₹{data['price_per_kg']}")
+
+# Sell watermelon
+def sell_watermelon(data):
+    qty = float(input("Enter quantity to sell (kg): "))
+    if qty <= data["stock"]:
+        total = qty * data["price_per_kg"]
+        data["stock"] -= qty
+        data["sales"].append({"qty": qty, "amount": total})
+        save_data(data)
+        print(f" Sold {qty} kg for ₹{total}")
+    else:
+        print(" Not enough stock available!")
+
+# View sales report
+def view_sales(data):
+    if not data["sales"]:
+        print(" No sales recorded yet!")
+        return
+    print("\n---  SALES REPORT ---")
+    total_revenue = 0
+    for i, sale in enumerate(data["sales"], 1):
+        print(f"{i}. {sale['qty']} kg | ₹{sale['amount']}")
+        total_revenue += sale["amount"]
+    print("----------------------------")
+    print(f"Total Revenue: ₹{total_revenue}")
+
+# Main Menu
+def main():
+    data = load_data()
+    while True:
+        print("\n=====  WATERMELON SHOP SALES =====")
+        print("1. Add Stock")
+        print("2. View Stock")
+        print("3. Sell Watermelon")
+        print("4. View Sales Report")
+        print("5. Exit")
+        choice = input(" Enter choice: ")
+
+        if choice == "1":
+            add_stock(data)
+        elif choice == "2":
+            view_stock(data)
+        elif choice == "3":
+            sell_watermelon(data)
+        elif choice == "4":
+            view_sales(data)
+        elif choice == "5":
+            print(" Exiting... Data saved!")
+            break
+        else:
+            print(" Invalid choice!")
+
+if __name__ == "__main__":
+    main()
