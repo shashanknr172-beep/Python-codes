@@ -1,0 +1,107 @@
+import json
+import os
+
+FILE = "event_management.json"
+
+# Load Data
+def load_data():
+    if os.path.exists(FILE):
+        with open(FILE, "r") as f:
+            return json.load(f)
+    return {"events": [], "bookings": []}
+
+# Save Data
+def save_data(data):
+    with open(FILE, "w") as f:
+        json.dump(data, f, indent=4)
+
+# Add Event
+def add_event(data):
+    event_id = len(data["events"]) + 1
+    name = input("Enter Event Name: ")
+    date = input("Enter Date (DD-MM-YYYY): ")
+    venue = input("Enter Venue: ")
+    capacity = int(input("Enter Max Capacity: "))
+
+    event = {
+        "id": event_id,
+        "name": name,
+        "date": date,
+        "venue": venue,
+        "capacity": capacity,
+        "booked": 0
+    }
+    data["events"].append(event)
+    save_data(data)
+    print(f" Event '{name}' added successfully!")
+
+# View Events
+def view_events(data):
+    if not data["events"]:
+        print(" No events available!")
+        return
+    print("\n---  Available Events ---")
+    for e in data["events"]:
+        print(f"[{e['id']}] {e['name']} | Date: {e['date']} | Venue: {e['venue']} | Capacity: {e['capacity']} | Booked: {e['booked']}")
+
+# Book Event
+def book_event(data):
+    if not data["events"]:
+        print(" No events to book!")
+        return
+    view_events(data)
+    event_id = int(input("Enter Event ID to Book: "))
+    customer = input("Enter Customer Name: ")
+
+    for e in data["events"]:
+        if e["id"] == event_id:
+            if e["booked"] < e["capacity"]:
+                e["booked"] += 1
+                booking = {"event_id": event_id, "customer": customer}
+                data["bookings"].append(booking)
+                save_data(data)
+                print(f" {customer} successfully booked for '{e['name']}'")
+                return
+            else:
+                print(" Event is fully booked!")
+                return
+    print(" Invalid Event ID!")
+
+# View Bookings
+def view_bookings(data):
+    if not data["bookings"]:
+        print(" No bookings yet!")
+        return
+    print("\n---  Event Bookings ---")
+    for b in data["bookings"]:
+        event_name = next((e["name"] for e in data["events"] if e["id"] == b["event_id"]), "Unknown")
+        print(f"Customer: {b['customer']} | Event: {event_name}")
+
+# Main Menu
+def main():
+    data = load_data()
+    while True:
+        print("\n=====  EVENT MANAGEMENT COMPANY =====")
+        print("1. Add Event")
+        print("2. View Events")
+        print("3. Book Event")
+        print("4. View Bookings")
+        print("5. Exit")
+        choice = input(" Enter choice: ")
+
+        if choice == "1":
+            add_event(data)
+        elif choice == "2":
+            view_events(data)
+        elif choice == "3":
+            book_event(data)
+        elif choice == "4":
+            view_bookings(data)
+        elif choice == "5":
+            print(" Exiting... Data saved!")
+            break
+        else:
+            print(" Invalid choice!")
+
+if __name__ == "__main__":
+    main()
