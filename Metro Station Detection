@@ -1,0 +1,87 @@
+#Features
+#Uses Graph (Adjacency List) to store metro stations.
+#BFS Algorithm ensures shortest path detection.
+#User can input start & end stations to find routes.
+#Prints total number of stations in the journey.
+
+
+
+
+
+from collections import deque
+
+class MetroMap:
+    def __init__(self):
+        self.graph = {}
+
+    # Add connection between stations
+    def add_connection(self, station1, station2):
+        if station1 not in self.graph:
+            self.graph[station1] = []
+        if station2 not in self.graph:
+            self.graph[station2] = []
+        self.graph[station1].append(station2)
+        self.graph[station2].append(station1)
+
+    # BFS to find shortest path
+    def shortest_path(self, start, end):
+        if start not in self.graph or end not in self.graph:
+            return None
+        
+        visited = set()
+        queue = deque([(start, [start])])  # (station, path)
+
+        while queue:
+            station, path = queue.popleft()
+            if station == end:
+                return path
+            visited.add(station)
+            for neighbor in self.graph[station]:
+                if neighbor not in visited:
+                    queue.append((neighbor, path + [neighbor]))
+        return None
+
+    # Print metro map
+    def show_map(self):
+        print("\n===== METRO MAP =====")
+        for station, neighbors in self.graph.items():
+            print(f"{station} -> {', '.join(neighbors)}")
+
+# Main Program
+def main():
+    metro = MetroMap()
+
+    # Sample Metro Connections (like Delhi Metro)
+    metro.add_connection("Rajiv Chowk", "Kashmere Gate")
+    metro.add_connection("Rajiv Chowk", "Central Secretariat")
+    metro.add_connection("Kashmere Gate", "Chandni Chowk")
+    metro.add_connection("Central Secretariat", "Hauz Khas")
+    metro.add_connection("Hauz Khas", "Saket")
+    metro.add_connection("Chandni Chowk", "Red Fort")
+    metro.add_connection("Saket", "Qutub Minar")
+
+    metro.show_map()
+
+    while True:
+        print("\n===== METRO ROUTE DETECTOR =====")
+        print("1. Find Shortest Route")
+        print("2. Exit")
+        choice = input(" Enter choice: ")
+
+        if choice == "1":
+            start = input("Enter Starting Station: ")
+            end = input("Enter Destination Station: ")
+            path = metro.shortest_path(start, end)
+            if path:
+                print(f" Shortest Route: {' -> '.join(path)}")
+                print(f"Total Stations: {len(path) - 1}")
+            else:
+                print(" No route found between given stations.")
+        elif choice == "2":
+            print(" Exiting Metro Detection System...")
+            break
+        else:
+            print(" Invalid choice!")
+
+if __name__ == "__main__":
+    main()
