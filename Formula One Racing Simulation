@@ -1,0 +1,83 @@
+import random
+import time
+
+class Racer:
+    def __init__(self, name):
+        self.name = name
+        self.total_time = 0
+        self.lap_times = []
+        self.status = "Racing"
+
+    def race_lap(self, lap_number):
+        # Base lap time (seconds)
+        base_time = random.randint(60, 80)
+
+        # Random events
+        event = random.choice(["normal", "pitstop", "crash", "boost"])
+
+        if event == "pitstop":
+            penalty = random.randint(5, 15)
+            lap_time = base_time + penalty
+            self.status = "Pitstop"
+        elif event == "crash":
+            lap_time = float("inf")  # Infinite time → out of race
+            self.status = "Crashed"
+        elif event == "boost":
+            bonus = random.randint(3, 7)
+            lap_time = base_time - bonus
+            self.status = "Boost!"
+        else:
+            lap_time = base_time
+            self.status = "Racing"
+
+        self.lap_times.append(lap_time)
+        self.total_time += lap_time if lap_time != float("inf") else 0
+
+        return lap_time
+
+class FormulaOneRace:
+    def __init__(self, racers, total_laps):
+        self.racers = [Racer(name) for name in racers]
+        self.total_laps = total_laps
+
+    def start_race(self):
+        print("\n=====  FORMULA ONE RACE START =====")
+        for lap in range(1, self.total_laps + 1):
+            print(f"\n===== LAP {lap} =====")
+            for racer in self.racers:
+                if racer.status == "Crashed":
+                    print(f"{racer.name}  Crashed and is out of the race!")
+                    continue
+                lap_time = racer.race_lap(lap)
+                if lap_time == float("inf"):
+                    print(f"{racer.name}  Crashed on lap {lap}!")
+                else:
+                    print(f"{racer.name} finished lap {lap} in {lap_time} sec ({racer.status})")
+
+            time.sleep(1)  # Simulate time between laps
+
+        self.show_results()
+
+    def show_results(self):
+        print("\n=====  FINAL RESULTS =====")
+        valid_racers = [r for r in self.racers if r.status != "Crashed"]
+        sorted_racers = sorted(valid_racers, key=lambda r: r.total_time)
+
+        for i, racer in enumerate(sorted_racers, start=1):
+            print(f"{i}. {racer.name} - Total Time: {racer.total_time:.2f} sec")
+
+        if sorted_racers:
+            print(f"\n Winner: {sorted_racers[0].name} with {sorted_racers[0].total_time:.2f} sec!")
+        else:
+            print("\n No winners, all racers crashed!")
+
+# Main program
+def main():
+    racers = ["Hamilton", "Verstappen", "Leclerc", "Norris", "Alonso"]
+    total_laps = 5
+
+    race = FormulaOneRace(racers, total_laps)
+    race.start_race()
+
+if __name__ == "__main__":
+    main()
