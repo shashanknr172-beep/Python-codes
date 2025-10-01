@@ -1,0 +1,97 @@
+#Search watch by brand
+#Search watch by price range
+#View all available watches
+#Buy a watch
+
+class Watch:
+    def __init__(self, brand, model, price, stock):
+        self.brand = brand
+        self.model = model
+        self.price = price
+        self.stock = stock
+
+    def __str__(self):
+        return f"{self.brand} {self.model} - ₹{self.price} (Stock: {self.stock})"
+
+class WatchMart:
+    def __init__(self):
+        self.watches = []
+
+    def add_watch(self, brand, model, price, stock):
+        self.watches.append(Watch(brand, model, price, stock))
+
+    def show_all_watches(self):
+        print("\n=====Available Watches in Mart =====")
+        for watch in self.watches:
+            print(watch)
+
+    def search_by_brand(self, brand):
+        print(f"\n Searching for brand: {brand}")
+        found = [w for w in self.watches if w.brand.lower() == brand.lower()]
+        if found:
+            for w in found:
+                print(w)
+        else:
+            print(" No watches found for this brand.")
+
+    def search_by_price_range(self, min_price, max_price):
+        print(f"\n Searching for watches between ₹{min_price} and ₹{max_price}")
+        found = [w for w in self.watches if min_price <= w.price <= max_price]
+        if found:
+            for w in found:
+                print(w)
+        else:
+            print(" No watches found in this price range.")
+
+    def buy_watch(self, brand, model):
+        for w in self.watches:
+            if w.brand.lower() == brand.lower() and w.model.lower() == model.lower():
+                if w.stock > 0:
+                    w.stock -= 1
+                    print(f" You bought {w.brand} {w.model} for ₹{w.price}. Stock left: {w.stock}")
+                else:
+                    print(" Out of stock!")
+                return
+        print(" Watch not found.")
+
+def main():
+    mart = WatchMart()
+
+    # Adding sample watches
+    mart.add_watch("Rolex", "Submariner", 750000, 3)
+    mart.add_watch("Casio", "G-Shock", 8000, 10)
+    mart.add_watch("Titan", "Edge", 15000, 5)
+    mart.add_watch("Fossil", "Grant", 12000, 7)
+    mart.add_watch("Seiko", "Prospex", 45000, 4)
+
+    while True:
+        print("\n=====  Watch Mart Menu =====")
+        print("1. Show All Watches")
+        print("2. Search by Brand")
+        print("3. Search by Price Range")
+        print("4. Buy a Watch")
+        print("5. Exit")
+
+        choice = input(" Enter your choice: ")
+
+        if choice == "1":
+            mart.show_all_watches()
+        elif choice == "2":
+            brand = input("Enter brand name: ")
+            mart.search_by_brand(brand)
+        elif choice == "3":
+            min_p = int(input("Enter minimum price: "))
+            max_p = int(input("Enter maximum price: "))
+            mart.search_by_price_range(min_p, max_p)
+        elif choice == "4":
+            brand = input("Enter brand name: ")
+            model = input("Enter model name: ")
+            mart.buy_watch(brand, model)
+        elif choice == "5":
+            print(" Thank you for visiting Watch Mart!")
+            break
+        else:
+            print(" Invalid choice. Try again!")
+
+if __name__ == "__main__":
+    main()
