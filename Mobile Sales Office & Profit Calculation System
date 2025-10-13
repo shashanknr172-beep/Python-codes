@@ -1,0 +1,136 @@
+# Mobile Sales Office & Profit Calculation System
+# Author: Python Code Hub
+# Description: Manages mobile inventory, sales, and profit analysis for a store.
+
+import json
+import os
+
+DATA_FILE = "mobile_data.json"
+
+class Mobile:
+    def __init__(self, model_id, name, brand, cost_price, sell_price, stock):
+        self.model_id = model_id
+        self.name = name
+        self.brand = brand
+        self.cost_price = cost_price
+        self.sell_price = sell_price
+        self.stock = stock
+
+    def to_dict(self):
+        return self.__dict__
+
+class MobileShop:
+    def __init__(self):
+        self.mobiles = self.load_data()
+        self.total_profit = 0
+
+    def load_data(self):
+        if os.path.exists(DATA_FILE):
+            with open(DATA_FILE, "r") as f:
+                return [Mobile(**m) for m in json.load(f)]
+        return []
+
+    def save_data(self):
+        with open(DATA_FILE, "w") as f:
+            json.dump([m.to_dict() for m in self.mobiles], f, indent=4)
+
+    def add_mobile(self, model_id, name, brand, cost_price, sell_price, stock):
+        self.mobiles.append(Mobile(model_id, name, brand, cost_price, sell_price, stock))
+        self.save_data()
+        print(f" {name} added successfully to inventory!\n")
+
+    def show_inventory(self):
+        if not self.mobiles:
+            print(" No mobiles in stock!\n")
+            return
+        print("\n CURRENT MOBILE INVENTORY ")
+        print(f"{'ID':<10}{'Name':<20}{'Brand':<12}{'Cost(₹)':<10}{'Sell(₹)':<10}{'Stock':<8}")
+        print("-" * 70)
+        for m in self.mobiles:
+            print(f"{m.model_id:<10}{m.name:<20}{m.brand:<12}{m.cost_price:<10}{m.sell_price:<10}{m.stock:<8}")
+        print()
+
+    def sell_mobile(self, model_id, quantity):
+        for m in self.mobiles:
+            if m.model_id == model_id:
+                if quantity > m.stock:
+                    print(f" Only {m.stock} units available for {m.name}.")
+                    return
+                profit = (m.sell_price - m.cost_price) * quantity
+                m.stock -= quantity
+                self.total_profit += profit
+                self.save_data()
+                print(f" Sold {quantity} {m.name}(s)! Profit: ₹{profit}\n")
+                return
+        print(" Mobile not found!\n")
+
+    def search_mobile(self, keyword):
+        found = False
+        for m in self.mobiles:
+            if keyword.lower() in m.name.lower() or keyword.lower() in m.brand.lower():
+                if not found:
+                    print(f"\n Search results for '{keyword}':")
+                    print(f"{'ID':<10}{'Name':<20}{'Brand':<12}{'Sell(₹)':<10}{'Stock':<8}")
+                    print("-" * 60)
+                print(f"{m.model_id:<10}{m.name:<20}{m.brand:<12}{m.sell_price:<10}{m.stock:<8}")
+                found = True
+        if not found:
+            print(f" No results for '{keyword}'.\n")
+        else:
+            print()
+
+    def profit_report(self):
+        total_stock_value = sum(m.sell_price * m.stock for m in self.mobiles)
+        print("\n PROFIT & SALES REPORT ")
+        print(f"Total Profit Earned: ₹{self.total_profit}")
+        print(f"Total Unsold Stock Value: ₹{total_stock_value}")
+        print("==============\n")
+
+
+def main():
+    shop = MobileShop()
+
+    while True:
+        print("=====  MOBILE SALES OFFICE SYSTEM =======")
+        print("1. Add New Mobile")
+        print("2. Show Inventory")
+        print("3. Sell Mobile")
+        print("4. Search Mobile")
+        print("5. Show Profit Report")
+        print("6. Exit")
+        choice = input(" Enter your choice: ")
+
+        if choice == "1":
+            model_id = input("Enter Model ID: ")
+            name = input("Enter Mobile Name: ")
+            brand = input("Enter Brand: ")
+            cost = float(input("Enter Cost Price (₹): "))
+            sell = float(input("Enter Selling Price (₹): "))
+            stock = int(input("Enter Stock Quantity: "))
+            shop.add_mobile(model_id, name, brand, cost, sell, stock)
+
+        elif choice == "2":
+            shop.show_inventory()
+
+        elif choice == "3":
+            model_id = input("Enter Model ID: ")
+            qty = int(input("Enter Quantity to Sell: "))
+            shop.sell_mobile(model_id, qty)
+
+        elif choice == "4":
+            keyword = input("Enter name or brand to search: ")
+            shop.search_mobile(keyword)
+
+        elif choice == "5":
+            shop.profit_report()
+
+        elif choice == "6":
+            print(" Exiting Mobile Sales Office. Have a great day!")
+            break
+
+        else:
+            print(" Invalid choice! Try again.\n")
+
+
+if __name__ == "__main__":
+    main()
