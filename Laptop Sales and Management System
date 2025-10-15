@@ -1,0 +1,157 @@
+import pickle
+import os
+
+# =========== #
+#   LAPTOP CLASS DEFINITION       
+# ================== #
+
+class Laptop:
+    def __init__(self, model_id, brand, name, cost_price, sell_price, stock):
+        self.model_id = model_id
+        self.brand = brand
+        self.name = name
+        self.cost_price = cost_price
+        self.sell_price = sell_price
+        self.stock = stock
+
+    def __str__(self):
+        return f"{self.model_id:<8} | {self.brand:<12} | {self.name:<20} | ₹{self.cost_price:<10.2f} | ₹{self.sell_price:<10.2f} | Stock: {self.stock}"
+
+
+# ================ #
+#   FILE HANDLING SYSTEM          
+# ====== #
+
+DATA_FILE = "laptops.dat"
+
+def load_data():
+    if os.path.exists(DATA_FILE):
+        with open(DATA_FILE, "rb") as f:
+            return pickle.load(f)
+    else:
+        return []
+
+def save_data(data):
+    with open(DATA_FILE, "wb") as f:
+        pickle.dump(data, f)
+
+
+# ============#
+#   MANAGEMENT SYSTEM CLASS      
+# =============== #
+
+class LaptopStore:
+    def __init__(self):
+        self.laptops = load_data()
+        self.total_profit = 0.0
+
+    def add_laptop(self):
+        print("\n--- Add New Laptop ---")
+        model_id = input("Enter Model ID: ").strip()
+        brand = input("Enter Brand Name: ").strip()
+        name = input("Enter Model Name: ").strip()
+        cost_price = float(input("Enter Cost Price (₹): "))
+        sell_price = float(input("Enter Selling Price (₹): "))
+        stock = int(input("Enter Initial Stock: "))
+
+        new_laptop = Laptop(model_id, brand, name, cost_price, sell_price, stock)
+        self.laptops.append(new_laptop)
+        save_data(self.laptops)
+        print(f" {brand} {name} added successfully!\n")
+
+    def show_inventory(self):
+        if not self.laptops:
+            print(" No laptops in inventory.\n")
+            return
+        print("\n===== LAPTOP INVENTORY ================")
+        print(f"{'ModelID':<8} | {'Brand':<12} | {'Name':<20} | {'Cost':<12} | {'Sell':<12} | Stock")
+        print("----------------------------")
+        for laptop in self.laptops:
+            print(laptop)
+        print("================================\n")
+
+    def update_stock(self):
+        model_id = input("Enter Laptop Model ID to Manufacture More Units: ").strip()
+        for laptop in self.laptops:
+            if laptop.model_id == model_id:
+                qty = int(input("Enter Quantity to Add: "))
+                laptop.stock += qty
+                save_data(self.laptops)
+                print(f"Added {qty} units to {laptop.name}. Total Stock: {laptop.stock}\n")
+                return
+        print(" Laptop model not found!\n")
+
+    def sell_laptop(self):
+        model_id = input("Enter Model ID to Sell: ").strip()
+        for laptop in self.laptops:
+            if laptop.model_id == model_id:
+                qty = int(input("Enter Quantity to Sell: "))
+                if qty > laptop.stock:
+                    print(f" Only {laptop.stock} units available!")
+                    return
+                laptop.stock -= qty
+                profit = (laptop.sell_price - laptop.cost_price) * qty
+                self.total_profit += profit
+                save_data(self.laptops)
+                print(f" Sold {qty} {laptop.brand} {laptop.name}(s). Profit: ₹{profit:.2f}\n")
+                return
+        print(" Laptop model not found!\n")
+
+    def search_laptop(self):
+        keyword = input("Enter Brand or Model Name to Search: ").strip().lower()
+        results = [l for l in self.laptops if keyword in l.brand.lower() or keyword in l.name.lower()]
+        if not results:
+            print(" No laptops found with that name.\n")
+            return
+        print("\n Search Results:")
+        for l in results:
+            print(l)
+        print()
+
+    def show_profit_report(self):
+        total_stock_value = sum(l.sell_price * l.stock for l in self.laptops)
+        print("\n====  PROFIT REPORT =========")
+        print(f"Total Profit Earned: ₹{self.total_profit:.2f}")
+        print(f"Remaining Stock Value: ₹{total_stock_value:.2f}")
+        print("==================\n")
+
+
+# ============= #
+#         MAIN PROGRAM          
+# ==================== #
+
+def main():
+    store = LaptopStore()
+
+    while True:
+        print("=======  LAPTOP SALES & MANAGEMENT SYSTEM ==========")
+        print("1. Add New Laptop")
+        print("2. Show Inventory")
+        print("3. Add Stock (Manufacture More)")
+        print("4. Sell Laptop")
+        print("5. Search Laptop")
+        print("6. Profit & Stock Report")
+        print("7. Exit")
+        print("=====================================")
+        choice = input(" Enter your choice: ")
+
+        if choice == '1':
+            store.add_laptop()
+        elif choice == '2':
+            store.show_inventory()
+        elif choice == '3':
+            store.update_stock()
+        elif choice == '4':
+            store.sell_laptop()
+        elif choice == '5':
+            store.search_laptop()
+        elif choice == '6':
+            store.show_profit_report()
+        elif choice == '7':
+            print(" Exiting Laptop Management System. Have a productive day!")
+            break
+        else:
+            print(" Invalid choice! Try again.\n")
+
+if __name__ == "__main__":
+    main()
