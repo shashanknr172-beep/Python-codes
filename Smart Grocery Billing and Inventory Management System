@@ -1,0 +1,178 @@
+import json
+import os
+from datetime import datetime
+
+# =====
+#   GROCERY ITEM CLASS
+# ========
+class GroceryItem:
+    def __init__(self, item_id, name, price, stock):
+        self.item_id = item_id
+        self.name = name
+        self.price = price
+        self.stock = stock
+
+    def __str__(self):
+        return f"{self.item_id:<6} | {self.name:<15} | ₹{self.price:<8.2f} | Stock: {self.stock}"
+
+# =========
+#   INVENTORY MANAGEMENT CLASS
+# =====
+class GroceryStore:
+    DATA_FILE = "inventory.json"
+
+    def __init__(self):
+        self.items = self.load_inventory()
+        self.sales_log = []
+
+    def load_inventory(self):
+        if os.path.exists(self.DATA_FILE):
+            with open(self.DATA_FILE, 'r') as f:
+                data = json.load(f)
+                return [GroceryItem(**item) for item in data]
+        return []
+
+    def save_inventory(self):
+        with open(self.DATA_FILE, 'w') as f:
+            json.dump([item.__dict__ for item in self.items], f, indent=4)
+
+    def add_item(self):
+        print("\n--- Add New Grocery Item ---")
+        item_id = input("Enter Item ID: ").strip()
+        name = input("Enter Item Name: ").strip()
+        price = float(input("Enter Price (₹): "))
+        stock = int(input("Enter Stock Quantity: "))
+        self.items.append(GroceryItem(item_id, name, price, stock))
+        self.save_inventory()
+        print(f" {name} added successfully!\n")
+
+    def display_items(self):
+        if not self.items:
+            print(" Inventory is empty.\n")
+            return
+        print("\n===  GROCERY INVENTORY ======")
+        print(f"{'ID':<6} | {'Name':<15} | {'Price':<10} | Stock")
+        print("-------------------")
+        for item in self.items:
+            print(item)
+        print("================\n")
+
+    def search_item(self):
+        keyword = input("Enter Item Name to Search: ").lower()
+        results = [i for i in self.items if keyword in i.name.lower()]
+        if not results:
+            print(" No items found.\n")
+            return
+        print("\n Search Results:")
+        for r in results:
+            print(r)
+        print()
+
+    def update_stock(self):
+        item_id = input("Enter Item ID to Update Stock: ").strip()
+        for item in self.items:
+            if item.item_id == item_id:
+                qty = int(input("Enter Quantity to Add: "))
+                item.stock += qty
+                self.save_inventory()
+                print(f"Added {qty} units to {item.name}. Total Stock: {item.stock}\n")
+                return
+        print(" Item not found!\n")
+
+    def generate_bill(self):
+        print("\n---  BILL GENERATION ---")
+        bill_items = []
+        total_amount = 0
+
+        while True:
+            self.display_items()
+            item_id = input("Enter Item ID to Buy (or 'done' to finish): ").strip()
+            if item_id.lower() == 'done':
+                break
+            item = next((i for i in self.items if i.item_id == item_id), None)
+            if not item:
+                print(" Invalid Item ID!\n")
+                continue
+            qty = int(input(f"Enter quantity of {item.name}: "))
+            if qty > item.stock:
+                print(" Not enough stock!\n")
+                continue
+            total = item.price * qty
+            total_amount += total
+            item.stock -= qty
+            bill_items.append((item.name, qty, item.price, total))
+
+        if not bill_items:
+            print(" No items selected.\n")
+            return
+
+        # Save inventory
+        self.save_inventory()
+
+        # Print final bill
+        print("\n=========  FINAL BILL =========")
+        print(f"{'Item':<15} | {'Qty':<5} | {'Price':<8} | {'Total':<8}")
+        print("--------------")
+        for b in bill_items:
+            print(f"{b[0]:<15} | {b[1]:<5} | ₹{b[2]:<8.2f} | ₹{b[3]:<8.2f}")
+        print("----------------------------------")
+        print(f" Grand Total: ₹{total_amount:.2f}")
+        print(f"Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        print("=================\n")
+
+        # Log sales
+        self.sales_log.append({
+            "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "total": total_amount,
+            "items": [b[0] for b in bill_items]
+        })
+
+    def sales_report(self):
+        if not self.sales_log:
+            print(" No sales yet.\n")
+            return
+        print("\n========= SALES REPORT =========")
+        for sale in self.sales_log:
+            print(f"Date: {sale['date']} | Total: ₹{sale['total']:.2f} | Items: {', '.join(sale['items'])}")
+        print("============\n")
+
+
+# =========
+#   MAIN PROGRAM LOOP
+# ==========
+def main():
+    store = GroceryStore()
+
+    while True:
+        print("==========  SMART GROCERY SYSTEM ==========")
+        print("1. Add Item to Inventory")
+        print("2. Display All Items")
+        print("3. Search Item")
+        print("4. Update Stock")
+        print("5. Generate Bill")
+        print("6. Show Sales Report")
+        print("7. Exit")
+        print("===================")
+        choice = input(" Enter your choice: ")
+
+        if choice == '1':
+            store.add_item()
+        elif choice == '2':
+            store.display_items()
+        elif choice == '3':
+            store.search_item()
+        elif choice == '4':
+            store.update_stock()
+        elif choice == '5':
+            store.generate_bill()
+        elif choice == '6':
+            store.sales_report()
+        elif choice == '7':
+            print(" Exiting Smart Grocery System. Have a great day!")
+            break
+        else:
+            print(" Invalid choice! Try again.\n")
+
+
+if __name__ == "__main__":
+    main()
