@@ -1,0 +1,87 @@
+import time
+import random
+
+class ParkingSpot:
+    def __init__(self, spot_id):
+        self.spot_id = spot_id
+        self.is_occupied = False
+        self.vehicle_number = None
+        self.entry_time = None
+
+    def assign_vehicle(self, vehicle_number):
+        self.is_occupied = True
+        self.vehicle_number = vehicle_number
+        self.entry_time = time.time()
+        print(f" Vehicle {vehicle_number} parked at spot {self.spot_id}.")
+
+    def release_vehicle(self):
+        self.is_occupied = False
+        exit_time = time.time()
+        parked_duration = (exit_time - self.entry_time) / 60  # minutes
+        cost = round(parked_duration * 2, 2)  # ₹2 per minute
+        print(f" Vehicle {self.vehicle_number} left spot {self.spot_id}. Fee: ₹{cost}")
+        self.vehicle_number = None
+        self.entry_time = None
+        return cost
+
+
+class ParkingLot:
+    def __init__(self, total_spots):
+        self.spots = [ParkingSpot(i + 1) for i in range(total_spots)]
+        self.total_revenue = 0
+
+    def display_status(self):
+        print("\n===  PARKING LOT STATUS ===")
+        for spot in self.spots:
+            status = f"Occupied by {spot.vehicle_number}" if spot.is_occupied else "Empty"
+            print(f"Spot {spot.spot_id}: {status}")
+        print("================")
+
+    def park_vehicle(self, vehicle_number):
+        for spot in self.spots:
+            if not spot.is_occupied:
+                spot.assign_vehicle(vehicle_number)
+                return
+        print("No available parking spots!")
+
+    def remove_vehicle(self, vehicle_number):
+        for spot in self.spots:
+            if spot.vehicle_number == vehicle_number:
+                fee = spot.release_vehicle()
+                self.total_revenue += fee
+                return
+        print(" Vehicle not found in the parking lot.")
+
+    def get_revenue(self):
+        print(f" Total Revenue Collected: ₹{round(self.total_revenue, 2)}")
+
+def main():
+    lot = ParkingLot(total_spots=5)
+
+    while True:
+        print("\n====  SMART PARKING MENU ====")
+        print(" Show Parking Lot Status")
+        print(" Park a Vehicle")
+        print(" Remove a Vehicle")
+        print("View Total Revenue")
+        print(" Exit")
+        choice = input("Enter choice: ")
+
+        if choice == '1':
+            lot.display_status()
+        elif choice == '2':
+            vehicle_number = input("Enter Vehicle Number: ").upper()
+            lot.park_vehicle(vehicle_number)
+        elif choice == '3':
+            vehicle_number = input("Enter Vehicle Number to Remove: ").upper()
+            lot.remove_vehicle(vehicle_number)
+        elif choice == '4':
+            lot.get_revenue()
+        elif choice == '5':
+            print(" Thank you for using Smart Parking System!")
+            break
+        else:
+            print(" Invalid choice! Try again.")
+
+if __name__ == "__main__":
+    main()
