@@ -1,0 +1,106 @@
+import random
+import time
+from datetime import datetime
+
+# -
+# Racer Class
+# --
+class Racer:
+    def __init__(self, name, team):
+        self.name = name
+        self.team = team
+        self.speed = 0
+        self.lap_time = 0
+        self.total_time = 0
+        self.lap_completed = 0
+        self.finished = False
+
+    def race_lap(self):
+        if self.finished:
+            return
+        # Simulate random lap time between 60s and 90s
+        self.speed = random.randint(180, 350)
+        self.lap_time = random.uniform(60.0, 90.0)
+        self.total_time += self.lap_time
+        self.lap_completed += 1
+
+        print(f" {self.name} ({self.team}) completed Lap {self.lap_completed} "
+              f"in {self.lap_time:.2f}s at {self.speed} km/h")
+
+    def __str__(self):
+        return f"{self.name} ({self.team}) - Total Time: {self.total_time:.2f}s"
+
+# ---
+# Race Track Class
+# -
+class RaceTrack:
+    def __init__(self, name, total_laps):
+        self.name = name
+        self.total_laps = total_laps
+        self.racers = []
+        self.start_time = None
+        self.end_time = None
+
+    def add_racer(self, racer):
+        self.racers.append(racer)
+        print(f" Racer {racer.name} from {racer.team} added to race!")
+
+    def start_race(self):
+        print(f"\n== MOTO RACE STARTED on {self.name} TRACK ===")
+        self.start_time = datetime.now()
+        for lap in range(1, self.total_laps + 1):
+            print(f"\n LAP {lap}/{self.total_laps}")
+            for racer in self.racers:
+                racer.race_lap()
+            self.display_leaderboard()
+            time.sleep(1)  # simulate delay between laps
+        self.end_time = datetime.now()
+        print("\n Race Finished!")
+        self.display_final_results()
+
+    def display_leaderboard(self):
+        print("\n==  Current Leaderboard =")
+        sorted_racers = sorted(self.racers, key=lambda r: r.total_time)
+        for i, racer in enumerate(sorted_racers, start=1):
+            print(f"{i}. {racer.name} ({racer.team}) - {racer.total_time:.2f}s")
+        print("======")
+
+    def display_final_results(self):
+        sorted_racers = sorted(self.racers, key=lambda r: r.total_time)
+        print("\n=  FINAL RACE RESULTS ===")
+        for i, racer in enumerate(sorted_racers, start=1):
+            print(f"{i}. {racer}")
+        print("=========")
+        winner = sorted_racers[0]
+        print(f" WINNER: {winner.name} from {winner.team} in {winner.total_time:.2f}s")
+        print(f" Total Race Duration: {self.end_time - self.start_time}")
+
+# --
+# Utility for user input
+# ----
+def setup_race():
+    print("===  Welcome to Moto Racing Simulator ===")
+    track_name = input("Enter Track Name: ")
+    total_laps = int(input("Enter Total Number of Laps: "))
+    race = RaceTrack(track_name, total_laps)
+
+    num_racers = int(input("Enter number of racers: "))
+    for _ in range(num_racers):
+        name = input("Enter Racer Name: ")
+        team = input("Enter Team Name: ")
+        race.add_racer(Racer(name, team))
+
+    return race
+
+# ---
+# Main Execution
+# --
+def main():
+    race = setup_race()
+    print("\n Race is about to begin!")
+    time.sleep(2)
+    race.start_race()
+    print("\n Race Summary Saved!")
+
+if __name__ == "__main__":
+    main()
