@@ -1,0 +1,153 @@
+import time
+
+# ----
+# CLASS DEFINITIONS
+# -----
+
+class Pizza:
+    def __init__(self, name, size, price):
+        self.name = name
+        self.size = size
+        self.price = price
+
+    def __str__(self):
+        return f"{self.name} ({self.size}) - ₹{self.price}"
+
+
+class Order:
+    def __init__(self, customer_name, address, phone):
+        self.customer_name = customer_name
+        self.address = address
+        self.phone = phone
+        self.items = []
+        self.status = "Pending"
+
+    def add_pizza(self, pizza):
+        self.items.append(pizza)
+        print(f" Added {pizza}")
+
+    def calculate_total(self):
+        return sum(pizza.price for pizza in self.items)
+
+    def confirm_order(self):
+        self.status = "Confirmed"
+        print(f" Order confirmed for {self.customer_name}!")
+
+    def deliver_order(self):
+        self.status = "Out for Delivery"
+        print(" Delivering your order...")
+        time.sleep(2)
+        self.status = "Delivered"
+        print(" Order delivered successfully!")
+
+    def display_order(self):
+        print("\n===  ORDER DETAILS ===")
+        print(f"Customer: {self.customer_name}")
+        print(f"Phone: {self.phone}")
+        print(f"Address: {self.address}")
+        print("-----------------")
+        for pizza in self.items:
+            print(f"- {pizza}")
+        print("---------------")
+        print(f"Total Amount: ₹{self.calculate_total()}")
+        print(f"Status: {self.status}")
+        print("============")
+
+
+class PizzaDeliverySystem:
+    def __init__(self):
+        self.menu = [
+            Pizza("Margherita", "Small", 199),
+            Pizza("Margherita", "Medium", 299),
+            Pizza("Margherita", "Large", 399),
+            Pizza("Pepperoni", "Small", 249),
+            Pizza("Pepperoni", "Medium", 349),
+            Pizza("Pepperoni", "Large", 449),
+            Pizza("Veggie Supreme", "Medium", 329),
+            Pizza("Cheese Burst", "Large", 499)
+        ]
+        self.orders = []
+
+    def show_menu(self):
+        print("\n===  PIZZA MENU ===")
+        for i, pizza in enumerate(self.menu, start=1):
+            print(f"{i}. {pizza}")
+        print("=======")
+
+    def choose_pizza(self, choice):
+        if 1 <= choice <= len(self.menu):
+            return self.menu[choice - 1]
+        else:
+            print("Invalid choice!")
+            return None
+
+    def take_order(self):
+        name = input("Enter Customer Name: ")
+        phone = input("Enter Phone Number: ")
+        address = input("Enter Delivery Address: ")
+
+        order = Order(name, address, phone)
+
+        while True:
+            self.show_menu()
+            try:
+                choice = int(input("Select pizza number: "))
+                pizza = self.choose_pizza(choice)
+                if pizza:
+                    order.add_pizza(pizza)
+            except ValueError:
+                print(" Please enter a valid number.")
+
+            again = input("Add another pizza? (y/n): ").lower()
+            if again != "y":
+                break
+
+        order.display_order()
+        confirm = input("Confirm order? (y/n): ").lower()
+        if confirm == "y":
+            order.confirm_order()
+            self.orders.append(order)
+            print(" Thank you! Your order has been placed.")
+            deliver = input("Start delivery simulation? (y/n): ").lower()
+            if deliver == "y":
+                order.deliver_order()
+        else:
+            print(" Order cancelled.")
+
+    def show_all_orders(self):
+        if not self.orders:
+            print(" No orders yet.")
+            return
+        for order in self.orders:
+            order.display_order()
+
+
+# ---
+# MAIN PROGRAM
+# ------------
+def main():
+    system = PizzaDeliverySystem()
+
+    while True:
+        print("\n===  PIZZA DELIVERY SYSTEM ===")
+        print(" Show Menu")
+        print(" Place Order")
+        print(" View All Orders")
+        print(" Exit")
+        choice = input("Enter choice: ")
+
+        if choice == "1":
+            system.show_menu()
+        elif choice == "2":
+            system.take_order()
+        elif choice == "3":
+            system.show_all_orders()
+        elif choice == "4":
+            print(" Exiting... Thank you for visiting!")
+            break
+        else:
+            print(" Invalid choice! Please try again.")
+
+
+if __name__ == "__main__":
+    main()
