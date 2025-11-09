@@ -1,0 +1,170 @@
+import time
+import json
+
+# ==========
+# CLASS DEFINITIONS
+# =======
+
+class Product:
+    def __init__(self, pid, name, category, price, stock):
+        self.pid = pid
+        self.name = name
+        self.category = category
+        self.price = price
+        self.stock = stock
+
+    def update_stock(self, quantity):
+        self.stock += quantity
+
+    def __str__(self):
+        return f"[{self.pid}] {self.name} ({self.category}) - ₹{self.price} | Stock: {self.stock}"
+
+
+class CookingStore:
+    def __init__(self):
+        self.products = {}
+        self.sales = []
+        self.load_data()
+
+    def load_data(self):
+        """Load data from JSON file if available"""
+        try:
+            with open("store_data.json", "r") as file:
+                data = json.load(file)
+                for pid, p in data["products"].items():
+                    self.products[pid] = Product(pid, p["name"], p["category"], p["price"], p["stock"])
+                self.sales = data["sales"]
+        except FileNotFoundError:
+            # Initialize with sample data
+            self.products = {
+                "P101": Product("P101", "Non-stick Pan", "Utensils", 799, 15),
+                "P102": Product("P102", "Pressure Cooker", "Utensils", 1599, 10),
+                "P103": Product("P103", "Olive Oil", "Ingredients", 499, 20),
+                "P104": Product("P104", "Chef Knife", "Cutlery", 999, 25),
+                "P105": Product("P105", "Spatula Set", "Tools", 349, 30)
+            }
+            self.sales = []
+
+    def save_data(self):
+        """Save store data to JSON file"""
+        data = {
+            "products": {pid: vars(p) for pid, p in self.products.items()},
+            "sales": self.sales
+        }
+        with open("store_data.json", "w") as file:
+            json.dump(data, file, indent=4)
+
+    def show_products(self):
+        print("\n== Available Products ===")
+        for product in self.products.values():
+            print(product)
+        print("=========")
+
+    def search_product(self, keyword):
+        print(f"\n Searching for '{keyword}'...")
+        found = False
+        for product in self.products.values():
+            if keyword.lower() in product.name.lower() or keyword.lower() in product.category.lower():
+                print(product)
+                found = True
+        if not found:
+            print(" No matching products found.")
+
+    def add_product(self):
+        pid = input("Enter Product ID: ").strip().upper()
+        if pid in self.products:
+            print(" Product ID already exists.")
+            return
+        name = input("Enter Product Name: ")
+        category = input("Enter Category: ")
+        price = float(input("Enter Price: "))
+        stock = int(input("Enter Stock Quantity: "))
+        self.products[pid] = Product(pid, name, category, price, stock)
+        print(" Product added successfully!")
+        self.save_data()
+
+    def restock_product(self):
+        pid = input("Enter Product ID to restock: ").strip().upper()
+        if pid not in self.products:
+            print(" Product not found.")
+            return
+        quantity = int(input("Enter quantity to add: "))
+        self.products[pid].update_stock(quantity)
+        print(f" Stock updated! Current stock: {self.products[pid].stock}")
+        self.save_data()
+
+    def sell_product(self):
+        pid = input("Enter Product ID to sell: ").strip().upper()
+        if pid not in self.products:
+            print(" Product not found.")
+            return
+        quantity = int(input("Enter quantity to sell: "))
+        product = self.products[pid]
+        if product.stock < quantity:
+            print(" Not enough stock available!")
+            return
+        total = product.price * quantity
+        product.update_stock(-quantity)
+        sale_record = {
+            "product_id": pid,
+            "product_name": product.name,
+            "quantity": quantity,
+            "total_amount": total,
+            "timestamp": time.strftime("%Y-%m-%d %H:%M:%S")
+        }
+        self.sales.append(sale_record)
+        print(f" Sold {quantity} x {product.name} for ₹{total}")
+        self.save_data()
+
+    def view_sales_report(self):
+        if not self.sales:
+            print(" No sales records available.")
+            return
+        print("\n===  Sales Report ===")
+        total_revenue = 0
+        for s in self.sales:
+            print(f"{s['timestamp']} | {s['product_name']} | Qty: {s['quantity']} | ₹{s['total_amount']}")
+            total_revenue += s['total_amount']
+        print("-----")
+        print(f"Total Revenue: ₹{total_revenue}")
+        print("============")
+
+# ===========
+# MAIN PROGRAM LOOP
+# ============
+
+def main():
+    store = CookingStore()
+    while True:
+        print("\n===  COOKING STORE MANAGEMENT SYSTEM ===")
+        print(" View Products")
+        print(" Search Product")
+        print(" Add Product")
+        print(" Restock Product")
+        print(" Sell Product")
+        print(" View Sales Report")
+        print(" Exit")
+        choice = input("Enter choice: ")
+
+        if choice == "1":
+            store.show_products()
+        elif choice == "2":
+            keyword = input("Enter keyword to search: ")
+            store.search_product(keyword)
+        elif choice == "3":
+            store.add_product()
+        elif choice == "4":
+            store.restock_product()
+        elif choice == "5":
+            store.sell_product()
+        elif choice == "6":
+            store.view_sales_report()
+        elif choice == "7":
+            print(" Saving data and exiting... Thank you for visiting!")
+            store.save_data()
+            break
+        else:
+            print(" Invalid choice! Try again.")
+
+if __name__ == "__main__":
+    main()
