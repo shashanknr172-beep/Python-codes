@@ -1,0 +1,120 @@
+import datetime
+
+class CarPart:
+    def __init__(self, part_id, name, cost_price, sell_price, stock):
+        self.part_id = part_id
+        self.name = name
+        self.cost_price = cost_price
+        self.sell_price = sell_price
+        self.stock = stock
+
+    def manufacture(self, quantity):
+        self.stock += quantity
+        print(f"[+] Manufactured {quantity} units of {self.name}. Total stock: {self.stock}")
+
+    def sell(self, quantity):
+        if quantity > self.stock:
+            print(f"[!] Not enough stock of {self.name}. Only {self.stock} left.")
+            return 0
+        else:
+            self.stock -= quantity
+            revenue = quantity * self.sell_price
+            print(f"[✓] Sold {quantity} units of {self.name}. Remaining stock: {self.stock}")
+            return revenue
+
+    def __str__(self):
+        return f"{self.part_id}: {self.name} | Stock: {self.stock} | Sell: ₹{self.sell_price}"
+
+class ManufacturingSystem:
+    def __init__(self):
+        self.parts = {}
+        self.sales_log = []
+
+    def add_part(self, part):
+        self.parts[part.part_id] = part
+        print(f"[+] Added new part: {part.name}")
+
+    def display_parts(self):
+        print("\n --- Current Car Parts Inventory ---")
+        for part in self.parts.values():
+            print(part)
+        print("------------------\n")
+
+    def manufacture_part(self, part_id, quantity):
+        if part_id in self.parts:
+            self.parts[part_id].manufacture(quantity)
+        else:
+            print("[!] Invalid Part ID")
+
+    def sell_part(self, part_id, quantity):
+        if part_id in self.parts:
+            revenue = self.parts[part_id].sell(quantity)
+            if revenue > 0:
+                sale = {
+                    "part_id": part_id,
+                    "name": self.parts[part_id].name,
+                    "quantity": quantity,
+                    "revenue": revenue,
+                    "date": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                }
+                self.sales_log.append(sale)
+        else:
+            print("[!] Invalid Part ID")
+
+    def total_revenue(self):
+        total = sum(sale["revenue"] for sale in self.sales_log)
+        print(f"\n Total Revenue: ₹{total}")
+        return total
+
+    def generate_report(self):
+        print("\n --- Sales Report ---")
+        for sale in self.sales_log:
+            print(f"{sale['date']} | {sale['name']} | Qty: {sale['quantity']} | Revenue: ₹{sale['revenue']}")
+        print("----------------")
+        self.total_revenue()
+
+def main_menu():
+    system = ManufacturingSystem()
+
+    # Initialize system with default parts
+    system.add_part(CarPart("ENG001", "Engine Block", 20000, 30000, 10))
+    system.add_part(CarPart("GEAR01", "Gearbox", 12000, 18000, 5))
+    system.add_part(CarPart("SUSP01", "Suspension", 8000, 12000, 8))
+    system.add_part(CarPart("BRK01", "Brake Pad Set", 2000, 3500, 15))
+    system.add_part(CarPart("ELEC01", "ECU Module", 5000, 8500, 6))
+
+    while True:
+        print("""
+ ========== Car Parts Manufacturing & Management ==========
+1. View Parts Inventory
+2. Manufacture New Parts
+3. Sell Parts
+4. View Sales Report
+5. Total Revenue
+6. Exit
+=================================================
+        """)
+        choice = input("Enter your choice: ")
+
+        if choice == "1":
+            system.display_parts()
+        elif choice == "2":
+            pid = input("Enter Part ID: ").upper()
+            qty = int(input("Enter Quantity to Manufacture: "))
+            system.manufacture_part(pid, qty)
+        elif choice == "3":
+            pid = input("Enter Part ID: ").upper()
+            qty = int(input("Enter Quantity to Sell: "))
+            system.sell_part(pid, qty)
+        elif choice == "4":
+            system.generate_report()
+        elif choice == "5":
+            system.total_revenue()
+        elif choice == "6":
+            print(" Exiting system. Thank you!")
+            break
+        else:
+            print("[!] Invalid choice, please try again.")
+
+if __name__ == "__main__":
+    main_menu()
