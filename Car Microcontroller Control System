@@ -1,0 +1,132 @@
+# -----------------------------
+# Car Microcontroller Simulation System
+# Author: Shashank
+# A clean Python simulation of how a microcontroller behaves inside a car.
+# --------
+
+import time
+import random
+
+class CarMicrocontroller:
+    def __init__(self):
+        self.engine_on = False
+        self.speed = 0
+        self.temperature = 25        # °C
+        self.fuel_level = 100        # %
+        self.error_log = []
+
+    # ---------------- ENGINE CONTROL ------------------
+    def start_engine(self):
+        if self.fuel_level <= 5:
+            self.log_error("Fuel too low to start engine")
+            print(" Engine failed to start: Low fuel.")
+        else:
+            self.engine_on = True
+            print("Engine Started Successfully!")
+
+    def stop_engine(self):
+        self.engine_on = False
+        self.speed = 0
+        print(" Engine Stopped")
+
+    # ------ SENSOR READING --------
+    def read_temperature(self):
+        self.temperature = random.randint(70, 110)
+        print(f" Temperature Sensor: {self.temperature}°C")
+        if self.temperature > 100:
+            self.log_error("Engine Overheated!")
+
+    def read_fuel_level(self):
+        print(f" Fuel Level: {self.fuel_level}%")
+        if self.fuel_level < 10:
+            self.log_error("Fuel Critically Low!")
+
+    # ---------- SPEED CONTROL -----
+    def accelerate(self, value):
+        if not self.engine_on:
+            print(" Cannot accelerate – engine OFF.")
+            return
+        self.speed += value
+        print(f" Speed Increased to {self.speed} km/h")
+        if self.speed > 180:
+            self.log_error("Overspeed Detected!")
+
+    def brake(self):
+        if self.speed > 0:
+            self.speed -= 20
+            if self.speed < 0:
+                self.speed = 0
+        print(f" Brake Applied. Speed: {self.speed} km/h")
+
+    # ----- SAFETY & ERROR SYSTEM --------
+    def log_error(self, msg):
+        timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
+        self.error_log.append(f"[{timestamp}] {msg}")
+
+    def show_system_status(self):
+        print("\n===== CAR MICROCONTROLLER STATUS =====")
+        print(f"Engine ON: {self.engine_on}")
+        print(f"Speed: {self.speed} km/h")
+        print(f"Temperature: {self.temperature}°C")
+        print(f"Fuel Level: {self.fuel_level}%")
+        print("Errors Logged:", len(self.error_log))
+        print("=====================\n")
+
+    def show_error_log(self):
+        print("\n===== ERROR LOG =====")
+        if not self.error_log:
+            print("No errors recorded.")
+        else:
+            for err in self.error_log:
+                print(err)
+        print("===========\n")
+
+# --------------------------
+# MAIN CONTROL SYSTEM (Simulating Microcontroller Operations)
+# --------------------------------------
+
+def main():
+    mcu = CarMicrocontroller()
+
+    while True:
+        print("""
+=========== MICROCONTROLLER MENU ========
+1. Start Engine
+2. Stop Engine
+3. Accelerate
+4. Apply Brake
+5. Read Temperature Sensor
+6. Read Fuel Level
+7. Show System Status
+8. Show Error Log
+9. Exit
+=====================================
+        """)
+
+        choice = input("Enter choice: ")
+
+        if choice == "1":
+            mcu.start_engine()
+        elif choice == "2":
+            mcu.stop_engine()
+        elif choice == "3":
+            value = int(input("Increase speed by (km/h): "))
+            mcu.accelerate(value)
+        elif choice == "4":
+            mcu.brake()
+        elif choice == "5":
+            mcu.read_temperature()
+        elif choice == "6":
+            mcu.read_fuel_level()
+        elif choice == "7":
+            mcu.show_system_status()
+        elif choice == "8":
+            mcu.show_error_log()
+        elif choice == "9":
+            print(" Microcontroller shutting down...")
+            break
+        else:
+            print(" Invalid option! Try again.")
+
+if __name__ == "__main__":
+    main()
