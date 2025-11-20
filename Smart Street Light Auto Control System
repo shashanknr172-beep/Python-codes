@@ -1,0 +1,34 @@
+# Smart Street Light Auto Control System
+# Real-world logic using Light Sensor + Motion Sensor
+
+import time
+import random  # used to simulate sensor values
+
+def read_light_sensor():
+    """Simulates ambient light level (0 = dark, 100 = bright)."""
+    return random.randint(0, 100)
+
+def read_motion_sensor():
+    """Simulates motion detection (True = movement detected)."""
+    return random.choice([True, False])
+
+def smart_street_light():
+    while True:
+        light_level = read_light_sensor()
+        motion = read_motion_sensor()
+
+        print(f"Light Level: {light_level}, Motion: {motion}")
+
+        if light_level < 40:  # dark outside
+            if motion:
+                print("Street Light: ON (High Brightness)")
+            else:
+                print("Street Light: ON (Low Brightness)")
+        else:
+            print("Street Light: OFF (Daytime)")
+
+        time.sleep(1)  # simulate real-time delay
+        print("------------")
+
+# Run the system
+smart_street_light()
