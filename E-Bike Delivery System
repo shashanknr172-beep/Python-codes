@@ -1,0 +1,81 @@
+class EBike:
+    def __init__(self, bike_id, battery):
+        self.bike_id = bike_id
+        self.battery = battery
+        self.available = True
+
+    def use_bike(self, distance):
+        usage = distance * 2  # battery consumption logic
+        self.battery = max(0, self.battery - usage)
+        if self.battery < 20:
+            self.available = False
+
+
+class Delivery:
+    def __init__(self, order_id, customer_name, distance):
+        self.order_id = order_id
+        self.customer_name = customer_name
+        self.distance = distance
+        self.assigned_bike = None
+
+
+class EBikeDeliverySystem:
+
+    def __init__(self):
+        self.bikes = []
+        self.orders = []
+
+    def add_bike(self, bike_id, battery):
+        self.bikes.append(EBike(bike_id, battery))
+
+    def add_order(self, order_id, customer_name, distance):
+        self.orders.append(Delivery(order_id, customer_name, distance))
+
+    def get_available_bike(self):
+        for bike in self.bikes:
+            if bike.available and bike.battery >= 30:
+                return bike
+        return None
+
+    def assign_order(self, delivery):
+        bike = self.get_available_bike()
+        if not bike:
+            print(f"No bike available for Order {delivery.order_id}")
+            return
+
+        delivery.assigned_bike = bike
+        bike.available = False
+        bike.use_bike(delivery.distance)
+
+        print(f"Order Assigned: {delivery.order_id} | Customer: {delivery.customer_name} "
+              f"| Bike: {bike.bike_id} | Battery After Trip: {bike.battery}%")
+
+    def process_deliveries(self):
+        for order in self.orders:
+            self.assign_order(order)
+
+    def show_bike_status(self):
+        print("\nBike Status After Deliveries:")
+        for bike in self.bikes:
+            print(f"{bike.bike_id} | Battery: {bike.battery}% | Available: {bike.available}")
+
+
+# --------- MAIN PROGRAM --------
+
+system = EBikeDeliverySystem()
+
+# Adding bikes
+system.add_bike("EB001", 90)
+system.add_bike("EB002", 70)
+system.add_bike("EB003", 25)
+
+# Adding delivery orders
+system.add_order("O101", "shashank", 10)
+system.add_order("O102", "Priya", 5)
+system.add_order("O103", "Aman", 12)
+
+# Processing all deliveries
+system.process_deliveries()
+
+# Display final bike status
+system.show_bike_status()
