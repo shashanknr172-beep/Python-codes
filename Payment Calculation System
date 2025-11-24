@@ -1,0 +1,242 @@
+import datetime
+import json
+import os
+
+
+# -------------- EMPLOYEE CLASS ----------
+
+class Employee:
+    def __init__(self, emp_id, name, base_salary, department):
+        self.emp_id = emp_id
+        self.name = name
+        self.base_salary = base_salary
+        self.department = department
+        self.pay_history = []
+
+    def add_payment_record(self, record):
+        self.pay_history.append(record)
+
+    def __str__(self):
+        return f"{self.emp_id} - {self.name} ({self.department})"
+
+
+# --------------------------- PAYMENT RECORD ------
+
+class PaymentRecord:
+    def __init__(self, emp_id, month, base, bonus, overtime_pay, tax, net):
+        self.emp_id = emp_id
+        self.month = month
+        self.base = base
+        self.bonus = bonus
+        self.overtime_pay = overtime_pay
+        self.tax = tax
+        self.net = net
+        self.timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+
+    def to_dict(self):
+        return {
+            "emp_id": self.emp_id,
+            "month": self.month,
+            "base_salary": self.base,
+            "bonus": self.bonus,
+            "overtime_pay": self.overtime_pay,
+            "tax": self.tax,
+            "net_salary": self.net,
+            "timestamp": self.timestamp
+        }
+
+
+# ------------------ PAYMENT CALCULATOR ---------------------------
+
+class PaymentCalculator:
+
+    @staticmethod
+    def calculate_bonus(department):
+        bonus_table = {
+            "HR": 4000,
+            "Engineering": 7000,
+            "Sales": 5000,
+            "Finance": 6000
+        }
+        return bonus_table.get(department, 3000)
+
+    @staticmethod
+    def calculate_overtime(hours):
+        return hours * 250  # Rs.250 per hour
+
+    @staticmethod
+    def calculate_tax(salary):
+        if salary <= 30000:
+            return salary * 0.05
+        elif salary <= 50000:
+            return salary * 0.10
+        else:
+            return salary * 0.15
+
+    @staticmethod
+    def calculate_total_salary(base_salary, bonus, overtime_pay):
+        gross = base_salary + bonus + overtime_pay
+        tax = PaymentCalculator.calculate_tax(gross)
+        net_salary = gross - tax
+        return gross, tax, net_salary
+
+
+# ---------------- FILE HANDLING ------------
+
+class FileManager:
+
+    @staticmethod
+    def save_history(employee_list):
+        data = {}
+        for emp in employee_list:
+            data[emp.emp_id] = {
+                "name": emp.name,
+                "department": emp.department,
+                "history": [record.to_dict() for record in emp.pay_history]
+            }
+
+        with open("payment_history.json", "w") as file:
+            json.dump(data, file, indent=4)
+
+    @staticmethod
+    def load_history():
+        if not os.path.exists("payment_history.json"):
+            return {}
+
+        with open("payment_history.json", "r") as file:
+            return json.load(file)
+
+
+# -------------- PAYMENT SYSTEM -----------------------
+
+class PaymentSystem:
+
+    def __init__(self):
+        self.employees = []
+        self.load_previous_history()
+
+    def load_previous_history(self):
+        history_data = FileManager.load_history()
+
+        for emp_id, info in history_data.items():
+            emp = Employee(emp_id, info["name"], 0, info["department"])
+            for rec in info["history"]:
+                record = PaymentRecord(
+                    rec["emp_id"],
+                    rec["month"],
+                    rec["base_salary"],
+                    rec["bonus"],
+                    rec["overtime_pay"],
+                    rec["tax"],
+                    rec["net_salary"]
+                )
+                emp.add_payment_record(record)
+
+            self.employees.append(emp)
+
+    def add_employee(self):
+        print("\n--- ADD EMPLOYEE ---")
+        emp_id = input("Enter Employee ID: ")
+        name = input("Enter Employee Name: ")
+        salary = float(input("Enter Base Salary: "))
+        dep = input("Enter Department: ")
+
+        emp = Employee(emp_id, name, salary, dep)
+        self.employees.append(emp)
+        print("Employee Added Successfully!")
+
+    def find_employee(self, emp_id):
+        for emp in self.employees:
+            if emp.emp_id == emp_id:
+                return emp
+        return None
+
+    def generate_salary(self):
+        print("\n--- SALARY CALCULATION ---")
+        emp_id = input("Enter Employee ID: ")
+        emp = self.find_employee(emp_id)
+
+        if not emp:
+            print("Employee Not Found!")
+            return
+
+        month = input("Enter Month: ")
+        overtime_hours = int(input("Enter Overtime Hours: "))
+
+        bonus = PaymentCalculator.calculate_bonus(emp.department)
+        overtime_pay = PaymentCalculator.calculate_overtime(overtime_hours)
+        gross, tax, net = PaymentCalculator.calculate_total_salary(
+            emp.base_salary, bonus, overtime_pay
+        )
+
+        record = PaymentRecord(emp.emp_id, month, emp.base_salary, bonus, overtime_pay, tax, net)
+        emp.add_payment_record(record)
+
+        print("\n----- SALARY SLIP -----")
+        print(f"Employee: {emp.name}")
+        print(f"Month: {month}")
+        print(f"Base Salary: Rs {emp.base_salary}")
+        print(f"Bonus: Rs {bonus}")
+        print(f"Overtime Pay: Rs {overtime_pay}")
+        print(f"Tax Deducted: Rs {tax}")
+        print(f"Net Salary: Rs {net}")
+        print("---------------------------")
+
+    def view_history(self):
+        print("\n--- PAYMENT HISTORY ---")
+        emp_id = input("Enter Employee ID: ")
+        emp = self.find_employee(emp_id)
+
+        if not emp:
+            print("Employee Not Found!")
+            return
+
+        if not emp.pay_history:
+            print("No Payment Records Found!")
+            return
+
+        for rec in emp.pay_history:
+            print("\n--- Record ---")
+            print(f"Month: {rec.month}")
+            print(f"Base Salary: {rec.base}")
+            print(f"Bonus: {rec.bonus}")
+            print(f"Overtime: {rec.overtime_pay}")
+            print(f"Tax: {rec.tax}")
+            print(f"Net: {rec.net}")
+            print(f"Timestamp: {rec.timestamp}")
+
+    def save(self):
+        FileManager.save_history(self.employees)
+        print("\nData Saved Successfully!")
+
+    def menu(self):
+        while True:
+            print("\n===== PAYMENT CALCULATION SYSTEM =====")
+            print("1. Add Employee")
+            print("2. Generate Salary")
+            print("3. View Salary History")
+            print("4. Save Data")
+            print("5. Exit")
+
+            ch = input("Enter choice: ")
+
+            if ch == '1':
+                self.add_employee()
+            elif ch == '2':
+                self.generate_salary()
+            elif ch == '3':
+                self.view_history()
+            elif ch == '4':
+                self.save()
+            elif ch == '5':
+                print("Exiting System...")
+                break
+            else:
+                print("Invalid Option!")
+
+
+# ---------------- MAIN PROGRAM ------------------
+
+if __name__ == "__main__":
+    system = PaymentSystem()
+    system.menu()
