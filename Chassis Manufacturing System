@@ -1,0 +1,118 @@
+class Chassis:
+    def __init__(self, chassis_id, type, steel_used, welding_hours, workers):
+        self.chassis_id = chassis_id
+        self.type = type
+        self.steel_used = steel_used   # in kg
+        self.welding_hours = welding_hours
+        self.workers = workers
+        self.status = "In Production"
+        self.cost = self.calculate_cost()
+
+    def calculate_cost(self):
+        steel_cost = self.steel_used * 120        # ₹120 per kg
+        welding_cost = self.welding_hours * 250   # ₹250 per hour
+        labor_cost = self.workers * 500           # ₹500 per worker
+        return steel_cost + welding_cost + labor_cost
+
+    def mark_complete(self):
+        self.status = "Completed"
+
+
+class ChassisSystem:
+    def __init__(self):
+        self.chassis_list = []
+        self.raw_steel_stock = 500  # kg available
+
+    def add_chassis(self):
+        print("\n--- ADD NEW CHASSIS ORDER ---")
+        cid = input("Enter Chassis ID: ")
+        type = input("Enter Type (Bike/Car/EV/SAE): ")
+        steel = int(input("Steel Required (kg): "))
+        weld = int(input("Welding Hours: "))
+        workers = int(input("Workers Assigned: "))
+
+        if steel > self.raw_steel_stock:
+            print(" Not enough steel in stock!")
+            return
+
+        self.raw_steel_stock -= steel
+        chassis = Chassis(cid, type, steel, weld, workers)
+        self.chassis_list.append(chassis)
+
+        print(f" Chassis {cid} added successfully!")
+        print(f"Remaining Steel Stock: {self.raw_steel_stock} kg")
+
+    def complete_chassis(self):
+        cid = input("\nEnter Chassis ID to Complete: ")
+
+        for c in self.chassis_list:
+            if c.chassis_id == cid:
+                c.mark_complete()
+                print(" Chassis marked as Completed!")
+                return
+
+        print(" Chassis Not Found!")
+
+    def show_chassis(self):
+        print("\n--- CHASSIS DETAILS ---")
+        if not self.chassis_list:
+            print("No Chassis Produced Yet!")
+            return
+
+        for c in self.chassis_list:
+            print(f"ID: {c.chassis_id} | Type: {c.type} | Steel: {c.steel_used}kg "
+                  f"| Welding: {c.welding_hours}h | Workers: {c.workers}"
+                  f" | Cost: ₹{c.cost} | Status: {c.status}")
+
+    def production_report(self):
+        print("\n--- PRODUCTION REPORT ---")
+        total_cost = 0
+        completed = 0
+
+        for c in self.chassis_list:
+            total_cost += c.cost
+            if c.status == "Completed":
+                completed += 1
+
+        print(f"Total Chassis Manufactured: {len(self.chassis_list)}")
+        print(f"Completed Chassis: {completed}")
+        print(f"Total Production Cost: ₹{total_cost}")
+        print(f"Steel Stock Left: {self.raw_steel_stock} kg")
+
+        if completed >= 5:
+            print(" Production Status: HIGH OUTPUT")
+        elif completed >= 2:
+            print(" Production Status: MEDIUM OUTPUT")
+        else:
+            print(" Production Status: LOW OUTPUT")
+
+    def menu(self):
+        while True:
+            print("\n=== CHASSIS MANUFACTURING SYSTEM ===")
+            print("1. Add Chassis Order")
+            print("2. Mark Chassis Complete")
+            print("3. Show Chassis Details")
+            print("4. Production Report")
+            print("5. Exit")
+
+            choice = input("Choose Option: ")
+
+            if choice == '1':
+                self.add_chassis()
+            elif choice == '2':
+                self.complete_chassis()
+            elif choice == '3':
+                self.show_chassis()
+            elif choice == '4':
+                self.production_report()
+            elif choice == '5':
+                print("Exiting System...")
+                break
+            else:
+                print("Invalid Choice!")
+
+
+# -------- MAIN PROGRAM --------
+if __name__ == "__main__":
+    system = ChassisSystem()
+    system.menu()
