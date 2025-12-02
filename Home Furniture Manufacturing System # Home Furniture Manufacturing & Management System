@@ -1,0 +1,124 @@
+# Home Furniture Manufacturing & Management System
+# Author: ChatGPT
+# Clean, real-world simulation
+
+class Furniture:
+    def __init__(self, name, material, cost_price, labor_cost, quantity):
+        self.name = name
+        self.material = material
+        self.cost_price = cost_price
+        self.labor_cost = labor_cost
+        self.quantity = quantity
+        self.sell_price = cost_price + labor_cost + 0.25 * (cost_price + labor_cost)
+
+    def details(self):
+        return f"{self.name} | Material: {self.material} | Qty: {self.quantity} | Sell Price: ₹{self.sell_price:.2f}"
+
+
+class Inventory:
+    def __init__(self):
+        self.items = []
+
+    def add_furniture(self, furniture):
+        self.items.append(furniture)
+        print(f"{furniture.name} added to inventory.")
+
+    def list_furniture(self):
+        print("\n------- Furniture Inventory -------")
+        for item in self.items:
+            print(item.details())
+        print("---------------------\n")
+
+    def find(self, name):
+        for f in self.items:
+            if f.name.lower() == name.lower():
+                return f
+        return None
+
+
+class Order:
+    def __init__(self, furniture, qty):
+        self.furniture = furniture
+        self.qty = qty
+        self.total = furniture.sell_price * qty
+
+    def print_order(self):
+        print("\n------ ORDER SUMMARY ------")
+        print(f"Furniture: {self.furniture.name}")
+        print(f"Quantity: {self.qty}")
+        print(f"Total Price: ₹{self.total:.2f}")
+        print("------------\n")
+
+
+class Production:
+    def manufacture(self, furniture):
+        print(f"\nManufacturing started for: {furniture.name}")
+        print(f"Material used: {furniture.material}")
+        print("Cutting materials...")
+        print("Assembling parts...")
+        print("Polishing & finishing...")
+        print("Quality Checking...")
+        print("Manufacturing Completed!\n")
+
+
+def main():
+    inventory = Inventory()
+    production = Production()
+
+    while True:
+        print("==== Home Furniture Manufacturing System ====")
+        print("1. Add New Furniture Design")
+        print("2. View Inventory")
+        print("3. Manufacture Furniture")
+        print("4. Place Order")
+        print("5. Exit")
+        
+        choice = input("Enter choice: ")
+
+        if choice == '1':
+            name = input("Enter furniture name (Chair/Table/Sofa etc): ")
+            material = input("Enter material used (Wood/Iron/Steel): ")
+            cost = float(input("Enter material cost: ₹"))
+            labor = float(input("Enter labor cost: ₹"))
+            quantity = int(input("Enter quantity manufactured: "))
+
+            f = Furniture(name, material, cost, labor, quantity)
+            inventory.add_furniture(f)
+
+        elif choice == '2':
+            inventory.list_furniture()
+
+        elif choice == '3':
+            name = input("Enter furniture name to manufacture: ")
+            f = inventory.find(name)
+            if f:
+                production.manufacture(f)
+            else:
+                print("Furniture not found in inventory!")
+
+        elif choice == '4':
+            name = input("Enter furniture name to order: ")
+            f = inventory.find(name)
+
+            if f:
+                qty = int(input("Enter quantity: "))
+                if qty <= f.quantity:
+                    order = Order(f, qty)
+                    f.quantity -= qty
+                    order.print_order()
+                    print("Order Placed Successfully!")
+                else:
+                    print("Not enough stock!")
+            else:
+                print("Furniture not found in inventory!")
+
+        elif choice == '5':
+            print("System Closed.")
+            break
+
+        else:
+            print("Invalid choice! Try again.\n")
+
+
+if __name__ == "__main__":
+    main()
