@@ -1,0 +1,89 @@
+class Furniture:
+    def __init__(self, f_type, material, time_to_make):
+        self.f_type = f_type
+        self.material = material
+        self.time_to_make = time_to_make
+        self.qc_passed = False
+
+    def quality_check(self):
+        """Simple QC check based on manufacturing time."""
+        if 2 <= self.time_to_make <= 20:
+            self.qc_passed = True
+            print(f"[QC] {self.f_type} passed quality check ✔")
+        else:
+            print(f"[QC] {self.f_type} failed quality check ✘")
+
+
+class Inventory:
+    def __init__(self):
+        self.furnitures = []
+
+    def add_furniture(self, item):
+        self.furnitures.append(item)
+        print(f"[Inventory] {item.f_type} added to inventory.")
+
+    def show_inventory(self):
+        print("\n=========== INVENTORY LIST ===========")
+        if not self.furnitures:
+            print("No furniture available.")
+        for f in self.furnitures:
+            print(f"{f.f_type} | Material: {f.material} | Time: {f.time_to_make} hrs | QC: "
+                  f"{'PASSED' if f.qc_passed else 'FAILED'}")
+        print("====================\n")
+
+
+class Dispatch:
+    def ship(self, item):
+        if item.qc_passed:
+            print(f"[Dispatch] {item.f_type} dispatched successfully! ")
+        else:
+            print(f"[Dispatch] Cannot ship {item.f_type}: QC not passed.")
+
+
+def main():
+    inventory = Inventory()
+    dispatch = Dispatch()
+
+    while True:
+        print("========= Home Furniture Manufacturing =========")
+        print("1. Manufacture Furniture")
+        print("2. View Inventory")
+        print("3. Dispatch Furniture")
+        print("4. Exit")
+        choice = input("Enter choice: ")
+
+        if choice == "1":
+            f_type = input("Enter Furniture Type (Chair/Table/Bed): ")
+            material = input("Enter Material (Wood/Steel/Plastic): ")
+            time = int(input("Enter Time Required to Make (hrs): "))
+
+            obj = Furniture(f_type, material, time)
+            obj.quality_check()
+            inventory.add_furniture(obj)
+
+        elif choice == "2":
+            inventory.show_inventory()
+
+        elif choice == "3":
+            name = input("Enter Furniture Type to Dispatch: ")
+            found = False
+
+            for item in inventory.furnitures:
+                if item.f_type.lower() == name.lower():
+                    dispatch.ship(item)
+                    found = True
+                    break
+
+            if not found:
+                print("[Error] Furniture not found in inventory.")
+
+        elif choice == "4":
+            print("System shutting down...")
+            break
+
+        else:
+            print("Invalid choice! Try again.")
+
+
+if __name__ == "__main__":
+    main()
