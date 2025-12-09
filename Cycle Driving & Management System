@@ -1,0 +1,102 @@
+import time
+from datetime import datetime
+
+
+class Cycle:
+    def __init__(self, model):
+        self.model = model
+        self.distance = 0
+        self.speed = 0
+        self.last_maintenance = 0
+        self.ride_history = []
+
+    def start_ride(self):
+        print(f"\nRide started on {self.model} cycle.")
+        start_time = datetime.now()
+        self.speed = int(input("Enter current speed (km/h): "))
+        duration = int(input("Ride duration (in minutes): "))
+
+        distance_covered = (self.speed * duration) / 60
+        self.distance += distance_covered
+        self.last_maintenance += distance_covered
+
+        print(f"Distance covered: {distance_covered:.2f} km")
+        end_time = datetime.now()
+
+        self.ride_history.append({
+            "start": start_time,
+            "end": end_time,
+            "speed": self.speed,
+            "distance": distance_covered
+        })
+
+        self.check_maintenance()
+
+    def check_maintenance(self):
+        if self.last_maintenance >= 25:
+            print("⚠ Maintenance Required: You have ridden 25+ km since last service.")
+        else:
+            print(f"Next maintenance in {25 - self.last_maintenance:.2f} km")
+
+    def service_cycle(self):
+        self.last_maintenance = 0
+        print("✔ Cycle has been serviced successfully.")
+
+    def show_cycle_status(self):
+        print("\n===== CYCLE STATUS =====")
+        print(f"Cycle Model: {self.model}")
+        print(f"Total Distance: {self.distance:.2f} km")
+        print(f"Current Speed: {self.speed} km/h")
+        print(f"Last Maintenance Ride: {self.last_maintenance:.2f} km")
+        print("========================\n")
+
+    def show_ride_history(self):
+        print("\n===== RIDE HISTORY =====")
+        if not self.ride_history:
+            print("No rides completed yet.")
+            return
+
+        for i, ride in enumerate(self.ride_history, 1):
+            print(f"\nRide {i}:")
+            print(f"Start: {ride['start']}")
+            print(f"End: {ride['end']}")
+            print(f"Speed: {ride['speed']} km/h")
+            print(f"Distance: {ride['distance']:.2f} km")
+        print("========================\n")
+
+
+def main():
+    model_name = input("Enter Cycle Model Name: ")
+    cycle = Cycle(model_name)
+
+    while True:
+        print("\n====== CYCLE DRIVING & MANAGEMENT SYSTEM ======")
+        print("1. Start Ride")
+        print("2. View Cycle Status")
+        print("3. View Ride History")
+        print("4. Service Cycle")
+        print("5. Exit")
+        choice = input("Enter choice: ")
+
+        if choice == "1":
+            cycle.start_ride()
+
+        elif choice == "2":
+            cycle.show_cycle_status()
+
+        elif choice == "3":
+            cycle.show_ride_history()
+
+        elif choice == "4":
+            cycle.service_cycle()
+
+        elif choice == "5":
+            print("System shutting down...")
+            break
+
+        else:
+            print("Invalid choice. Try again.")
+
+
+if __name__ == "__main__":
+    main()
