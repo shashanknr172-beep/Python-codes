@@ -1,0 +1,96 @@
+# Cycle Manufacturing System
+# Real-world simulation of cycle making process
+
+class Cycle:
+    def __init__(self, cycle_id, model, frame_type):
+        self.cycle_id = cycle_id
+        self.model = model
+        self.frame_type = frame_type
+        self.status = "In Production"
+        self.cost = 0
+
+    def calculate_cost(self):
+        frame_cost = {"Steel": 3000, "Aluminium": 4500, "Carbon": 8000}
+        wheel_cost = 2000
+        labor_cost = 1500
+        self.cost = frame_cost.get(self.frame_type, 3000) + wheel_cost + labor_cost
+
+    def complete_cycle(self):
+        self.status = "Completed"
+
+    def show_details(self):
+        print(f"ID: {self.cycle_id} | Model: {self.model} | Frame: {self.frame_type} | "
+              f"Cost: ₹{self.cost} | Status: {self.status}")
+
+
+class CycleFactory:
+    def __init__(self):
+        self.cycles = []
+
+    def manufacture_cycle(self):
+        print("\n--- Manufacture New Cycle ---")
+        cid = input("Enter Cycle ID: ")
+        model = input("Enter Cycle Model: ")
+        frame = input("Frame Type (Steel/Aluminium/Carbon): ")
+
+        cycle = Cycle(cid, model, frame)
+        cycle.calculate_cost()
+        self.cycles.append(cycle)
+
+        print("Cycle manufactured successfully!")
+
+    def complete_order(self):
+        cid = input("Enter Cycle ID to complete: ")
+        for c in self.cycles:
+            if c.cycle_id == cid:
+                c.complete_cycle()
+                print("Cycle marked as completed.")
+                return
+        print("Cycle not found.")
+
+    def show_inventory(self):
+        print("\n--- Cycle Inventory ---")
+        if not self.cycles:
+            print("No cycles manufactured yet.")
+        for c in self.cycles:
+            c.show_details()
+
+    def production_report(self):
+        total_cost = sum(c.cost for c in self.cycles)
+        completed = sum(1 for c in self.cycles if c.status == "Completed")
+
+        print("\n--- Production Report ---")
+        print(f"Total Cycles Produced: {len(self.cycles)}")
+        print(f"Completed Cycles: {completed}")
+        print(f"Total Manufacturing Cost: ₹{total_cost}")
+
+    def menu(self):
+        while True:
+            print("\n===== CYCLE MANUFACTURING SYSTEM =====")
+            print("1. Manufacture Cycle")
+            print("2. Complete Cycle")
+            print("3. Show Inventory")
+            print("4. Production Report")
+            print("5. Exit")
+
+            choice = input("Enter choice: ")
+
+            if choice == "1":
+                self.manufacture_cycle()
+            elif choice == "2":
+                self.complete_order()
+            elif choice == "3":
+                self.show_inventory()
+            elif choice == "4":
+                self.production_report()
+            elif choice == "5":
+                print("System shutting down...")
+                break
+            else:
+                print("Invalid choice!")
+
+
+# -------- Main Program --------
+if __name__ == "__main__":
+    factory = CycleFactory()
+    factory.menu()
