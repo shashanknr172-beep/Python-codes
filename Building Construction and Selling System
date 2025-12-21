@@ -1,0 +1,254 @@
+# -----------------------
+# BUILDING CONSTRUCTION AND SELLING SYSTEM
+# -------------------------------
+# Author: Student Project
+# Language: Python
+# Type: Console Application
+# -------------------------
+
+import datetime
+
+# ----------------
+# CUSTOMER CLASS
+# ---------------------
+class Customer:
+    def __init__(self, customer_id, name, phone, address):
+        self.customer_id = customer_id
+        self.name = name
+        self.phone = phone
+        self.address = address
+
+    def display(self):
+        print("\nCustomer Details")
+        print("------")
+        print("ID      :", self.customer_id)
+        print("Name    :", self.name)
+        print("Phone   :", self.phone)
+        print("Address :", self.address)
+
+
+# --------
+# BUILDING CLASS
+# -----------
+class Building:
+    def __init__(self, building_id, location, area_sqft, floors, rate_per_sqft):
+        self.building_id = building_id
+        self.location = location
+        self.area_sqft = area_sqft
+        self.floors = floors
+        self.rate_per_sqft = rate_per_sqft
+        self.total_cost = self.calculate_cost()
+        self.is_sold = False
+        self.owner = None
+
+    def calculate_cost(self):
+        base_cost = self.area_sqft * self.rate_per_sqft
+        floor_cost = self.floors * 50000
+        return base_cost + floor_cost
+
+    def display(self):
+        print("\nBuilding Details")
+        print("----------------")
+        print("Building ID   :", self.building_id)
+        print("Location      :", self.location)
+        print("Area (sqft)   :", self.area_sqft)
+        print("Floors        :", self.floors)
+        print("Rate/sqft     :", self.rate_per_sqft)
+        print("Total Cost    : ₹", self.total_cost)
+        print("Status        :", "Sold" if self.is_sold else "Available")
+
+
+# ----------------------------------
+# SALE CLASS
+# -----------------------------
+class Sale:
+    def __init__(self, sale_id, building, customer, advance_paid):
+        self.sale_id = sale_id
+        self.building = building
+        self.customer = customer
+        self.advance_paid = advance_paid
+        self.sale_date = datetime.date.today()
+        self.balance = building.total_cost - advance_paid
+
+    def display(self):
+        print("\nSale Details")
+        print("------------")
+        print("Sale ID        :", self.sale_id)
+        print("Sale Date      :", self.sale_date)
+        print("Customer Name  :", self.customer.name)
+        print("Building ID    :", self.building.building_id)
+        print("Total Cost     : ₹", self.building.total_cost)
+        print("Advance Paid   : ₹", self.advance_paid)
+        print("Balance Amount : ₹", self.balance)
+
+
+# ----------------------------
+# MAIN SYSTEM CLASS
+# -----------------------
+class ConstructionSystem:
+    def __init__(self):
+        self.customers = []
+        self.buildings = []
+        self.sales = []
+        self.customer_count = 1
+        self.building_count = 1
+        self.sale_count = 1
+
+    # -------------------------------
+    # ADD CUSTOMER
+    # ---------------------
+    def add_customer(self):
+        print("\nAdd New Customer")
+        name = input("Enter name: ")
+        phone = input("Enter phone: ")
+        address = input("Enter address: ")
+
+        customer = Customer(self.customer_count, name, phone, address)
+        self.customers.append(customer)
+        print("Customer added successfully!")
+        self.customer_count += 1
+
+    # ---------------------
+    # ADD BUILDING
+    # ---------
+    def add_building(self):
+        print("\nAdd New Building")
+        location = input("Enter location: ")
+        area = float(input("Enter area (sqft): "))
+        floors = int(input("Enter number of floors: "))
+        rate = float(input("Enter rate per sqft: "))
+
+        building = Building(self.building_count, location, area, floors, rate)
+        self.buildings.append(building)
+        print("Building added successfully!")
+        self.building_count += 1
+
+    # ----------------
+    # VIEW CUSTOMERS
+    # --------------
+    def view_customers(self):
+        if not self.customers:
+            print("\nNo customers available.")
+            return
+
+        for customer in self.customers:
+            customer.display()
+
+    # ------------
+    # VIEW BUILDINGS
+    # ------------
+    def view_buildings(self):
+        if not self.buildings:
+            print("\nNo buildings available.")
+            return
+
+        for building in self.buildings:
+            building.display()
+
+    # -----------
+    # SELL BUILDING
+    # ---------------------
+    def sell_building(self):
+        if not self.customers or not self.buildings:
+            print("\nCustomers or buildings not available.")
+            return
+
+        print("\nAvailable Buildings:")
+        for b in self.buildings:
+            if not b.is_sold:
+                print("ID:", b.building_id, "| Location:", b.location)
+
+        b_id = int(input("Enter building ID to sell: "))
+        building = next((b for b in self.buildings if b.building_id == b_id and not b.is_sold), None)
+
+        if not building:
+            print("Invalid building selection.")
+            return
+
+        print("\nCustomers List:")
+        for c in self.customers:
+            print("ID:", c.customer_id, "| Name:", c.name)
+
+        c_id = int(input("Enter customer ID: "))
+        customer = next((c for c in self.customers if c.customer_id == c_id), None)
+
+        if not customer:
+            print("Invalid customer selection.")
+            return
+
+        advance = float(input("Enter advance payment amount: "))
+
+        sale = Sale(self.sale_count, building, customer, advance)
+        self.sales.append(sale)
+        building.is_sold = True
+        building.owner = customer
+
+        print("Building sold successfully!")
+        self.sale_count += 1
+
+    # -------------------
+    # VIEW SALES
+    # -------------------------
+    def view_sales(self):
+        if not self.sales:
+            print("\nNo sales records available.")
+            return
+
+        for sale in self.sales:
+            sale.display()
+
+    # ----------------------------
+    # SYSTEM REPORT
+    # --------------------------------
+    def system_report(self):
+        print("\nSystem Summary Report")
+        print("---------------------")
+        print("Total Customers :", len(self.customers))
+        print("Total Buildings :", len(self.buildings))
+        print("Buildings Sold  :", len([b for b in self.buildings if b.is_sold]))
+        print("Total Sales     :", len(self.sales))
+
+    # -----------------------
+    # MAIN MENU
+    # ----------------------------------------
+    def menu(self):
+        while True:
+            print("\n--- BUILDING CONSTRUCTION & SELLING SYSTEM ---")
+            print("1. Add Customer")
+            print("2. Add Building")
+            print("3. View Customers")
+            print("4. View Buildings")
+            print("5. Sell Building")
+            print("6. View Sales")
+            print("7. System Report")
+            print("8. Exit")
+
+            choice = input("Enter your choice: ")
+
+            if choice == '1':
+                self.add_customer()
+            elif choice == '2':
+                self.add_building()
+            elif choice == '3':
+                self.view_customers()
+            elif choice == '4':
+                self.view_buildings()
+            elif choice == '5':
+                self.sell_building()
+            elif choice == '6':
+                self.view_sales()
+            elif choice == '7':
+                self.system_report()
+            elif choice == '8':
+                print("Exiting system... Thank you!")
+                break
+            else:
+                print("Invalid choice! Try again.")
+
+
+# ------------------------------
+# MAIN EXECUTION
+# ------------------------------
+if __name__ == "__main__":
+    system = ConstructionSystem()
+    system.menu()
