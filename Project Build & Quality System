@@ -1,0 +1,77 @@
+import random
+from datetime import datetime
+
+class Project:
+    def __init__(self, name, language, version):
+        self.name = name
+        self.language = language
+        self.version = version
+        self.tests_passed = False
+        self.coverage = 0
+        self.quality_score = 0
+
+    def build(self):
+        print(f"[BUILD] Building {self.name} ({self.language} {self.version})...")
+        return True
+
+    def run_tests(self):
+        print("[TEST] Running unit tests...")
+        self.tests_passed = random.choice([True, True, False])
+        return self.tests_passed
+
+    def generate_coverage(self):
+        self.coverage = random.randint(60, 95)
+        print(f"[COVERAGE] Test Coverage: {self.coverage}%")
+        return self.coverage
+
+    def static_analysis(self):
+        print("[ANALYSIS] Running static code analysis...")
+        self.quality_score = random.randint(70, 100)
+        return self.quality_score
+
+    def report(self):
+        print("\n----- BUILD REPORT -----")
+        print(f"Project       : {self.name}")
+        print(f"Language      : {self.language}")
+        print(f"Version       : {self.version}")
+        print(f"Tests Passed  : {self.tests_passed}")
+        print(f"Coverage      : {self.coverage}%")
+        print(f"Quality Score : {self.quality_score}/100")
+        print(f"Timestamp     : {datetime.now()}")
+        print("--------------")
+
+
+class CICDPipeline:
+    def __init__(self, project):
+        self.project = project
+
+    def execute(self):
+        if not self.project.build():
+            print(" Build Failed")
+            return
+
+        if not self.project.run_tests():
+            print(" Tests Failed")
+            return
+
+        self.project.generate_coverage()
+        self.project.static_analysis()
+
+        if self.project.coverage < 70 or self.project.quality_score < 80:
+            print(" Quality Gate Failed")
+        else:
+            print(" Quality Gate Passed")
+
+        self.project.report()
+
+
+# ---- MAIN EXECUTION ----
+if __name__ == "__main__":
+    project = Project(
+        name="Modern Build System",
+        language="Python",
+        version="3.12"
+    )
+
+    pipeline = CICDPipeline(project)
+    pipeline.execute()
